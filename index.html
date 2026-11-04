@@ -377,64 +377,62 @@
 
     <!-- ================= HUMANIZER ================= -->
     <div id="page-humanizer" class="page">
-  <div class="back-link" onclick="showPage('dashboard')" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-muted);margin-bottom:16px;font-weight:600;cursor:pointer;"><i class="fas fa-arrow-left"></i> Back to Dashboard</div>
-  <div class="tool-header" style="margin-bottom:24px;">
-    <h2 style="font-size:28px;font-weight:800;margin-bottom:6px;">AI Humanizer</h2>
-    <p style="color:var(--text-muted);font-size:14px;">Improve readability, clarity and tone of your academic writing.</p>
-  </div>
-
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-    <div class="card-panel" style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
-      <div class="flex" style="justify-content: space-between; margin-bottom: 12px;">
-        <label style="font-weight: 600; font-size: 13px;">Input text</label>
-        <span style="font-size: 12px; color: var(--text-muted);"><span id="hWordCount">0</span> words</span>
-      </div>
-      <textarea id="hInput" class="form-control" placeholder="Paste your essay or assignment draft here..."></textarea>
-      
-      <!-- Auto AI Score (Input) -->
-      <div id="inputScoreContainer" class="hidden" style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border);">
-        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
-          <span id="inputScoreLabel" style="font-weight:700;">0% AI-Written</span>
-          <span>0-100%</span>
-        </div>
-        <div class="progress-bg" style="height: 8px; background: var(--bg-main); border-radius: 999px; overflow: hidden;">
-          <div class="progress-fill" id="inputScoreBar" style="height: 100%; width: 0%; background: var(--green); border-radius: 999px; transition: width 0.4s;"></div>
-        </div>
+      <div class="back-link" onclick="showPage('dashboard')" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-muted);margin-bottom:16px;font-weight:600;cursor:pointer;"><i class="fas fa-arrow-left"></i> Back to Dashboard</div>
+      <div class="tool-header" style="margin-bottom:24px;">
+        <h2 style="font-size:28px;font-weight:800;margin-bottom:6px;">AI Humanizer</h2>
+        <p style="color:var(--text-muted);font-size:14px;">Improve readability, clarity and tone of your academic writing.</p>
       </div>
 
-      <div style="display: flex; gap: 12px; margin-top: 16px;">
-        <button class="btn-primary" id="hRunBtn" onclick="runHumanizer()" style="flex: 2;">✨ Humanize Text</button>
-        <button class="btn-secondary" onclick="clearHumanizer()" style="flex: 1;">Clear</button>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <div class="card-panel" style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
+          <div class="flex" style="justify-content: space-between; margin-bottom: 12px;">
+            <label style="font-weight: 600; font-size: 13px;">Input text</label>
+            <span style="font-size: 12px; color: var(--text-muted);"><span id="hWordCount">0</span> words</span>
+          </div>
+          <textarea id="hInput" class="form-control" placeholder="Paste your essay or assignment draft here..."></textarea>
+          
+          <div id="inputScoreContainer" class="hidden" style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border);">
+            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+              <span id="inputScoreLabel" style="font-weight:700;">0% AI-Written</span>
+              <span>0-100%</span>
+            </div>
+            <div class="progress-bg" style="height: 8px; background: var(--bg-main); border-radius: 999px; overflow: hidden;">
+              <div class="progress-fill" id="inputScoreBar" style="height: 100%; width: 0%; background: var(--green); border-radius: 999px; transition: width 0.4s;"></div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-top: 16px;">
+            <button class="btn-primary" id="hRunBtn" onclick="runHumanizer()" style="flex: 2;">✨ Humanize Text</button>
+            <button class="btn-secondary" onclick="clearHumanizer()" style="flex: 1;">Clear</button>
+          </div>
+          <p id="hError" style="color: var(--red); font-size: 13px; margin-top: 8px; display: none;"></p>
+        </div>
+
+        <div class="card-panel" style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
+          <div class="flex" style="justify-content: space-between; margin-bottom: 12px;">
+            <label style="font-weight: 600; font-size: 13px;">Output</label>
+            <span id="hStatus" style="font-size: 12px; padding: 2px 8px; background: var(--bg-main); border-radius: 999px;">Ready</span>
+          </div>
+          <div class="output-box" id="hOutput"><p class="output-empty" style="color:var(--text-light);font-style:italic;">Your improved text will appear here.</p></div>
+          
+          <div id="outputScoreContainer" class="hidden" style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border);">
+            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+              <span id="outputScoreLabel" style="font-weight:700;">0% AI-Written</span>
+              <span>0-100%</span>
+            </div>
+            <div class="progress-bg" style="height: 8px; background: var(--bg-main); border-radius: 999px; overflow: hidden;">
+              <div class="progress-fill" id="outputScoreBar" style="height: 100%; width: 0%; background: var(--green); border-radius: 999px; transition: width 0.4s;"></div>
+            </div>
+          </div>
+
+          <div id="hHumanizedBanner" class="hidden" style="margin-top: 16px; padding: 12px; border-radius: var(--radius-sm); font-weight: 600; font-size: 13px; text-align: center;"></div>
+          <div style="display: flex; gap: 12px; margin-top: 16px;">
+            <button class="btn-secondary" onclick="copyOutput()" style="flex: 1;">📋 Copy</button>
+            <button class="btn-secondary" onclick="downloadTxt()" style="flex: 1;">⬇ .txt</button>
+          </div>
+        </div>
       </div>
-      <p id="hError" style="color: var(--red); font-size: 13px; margin-top: 8px; display: none;"></p>
     </div>
-
-    <div class="card-panel" style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
-      <div class="flex" style="justify-content: space-between; margin-bottom: 12px;">
-        <label style="font-weight: 600; font-size: 13px;">Output</label>
-        <span id="hStatus" style="font-size: 12px; padding: 2px 8px; background: var(--bg-main); border-radius: 999px;">Ready</span>
-      </div>
-      <div class="output-box" id="hOutput"><p class="output-empty" style="color:var(--text-light);font-style:italic;">Your improved text will appear here.</p></div>
-      
-      <!-- Auto AI Score (Output) -->
-      <div id="outputScoreContainer" class="hidden" style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border);">
-        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
-          <span id="outputScoreLabel" style="font-weight:700;">0% AI-Written</span>
-          <span>0-100%</span>
-        </div>
-        <div class="progress-bg" style="height: 8px; background: var(--bg-main); border-radius: 999px; overflow: hidden;">
-          <div class="progress-fill" id="outputScoreBar" style="height: 100%; width: 0%; background: var(--green); border-radius: 999px; transition: width 0.4s;"></div>
-        </div>
-      </div>
-
-      <div id="hHumanizedBanner" class="hidden" style="margin-top: 16px; padding: 12px; border-radius: var(--radius-sm); font-weight: 600; font-size: 13px; text-align: center;"></div>
-      <div style="display: flex; gap: 12px; margin-top: 16px;">
-        <button class="btn-secondary" onclick="copyOutput()" style="flex: 1;">📋 Copy</button>
-        <button class="btn-secondary" onclick="downloadTxt()" style="flex: 1;">⬇ .txt</button>
-      </div>
-    </div>
-  </div>
-</div>
 
     <!-- ================= DOCUMENT CENTRE (AI DETECTOR) ================= -->
     <div id="page-documents" class="page">
@@ -449,7 +447,6 @@
         <div class="doc-tab" onclick="switchDocTab('lecturer')">Lecturer Mode</div>
       </div>
 
-      <!-- STUDENT MODE -->
       <div id="docStudentTab">
         <div class="card-panel" style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
           <div class="meta-form">
@@ -480,7 +477,6 @@
         </div>
       </div>
 
-      <!-- LECTURER MODE -->
       <div id="docLecturerTab" class="hidden">
         <div class="card-panel" style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
           <h3 style="margin-bottom: 16px; font-size: 15px;">Bulk Upload (Lecturer)</h3>
@@ -507,7 +503,6 @@
       </div>
 
       <div class="tutor-layout">
-        <!-- SIDEBAR (Pages) -->
         <div class="tutor-sidebar">
           <div class="upload-zone" style="padding: 20px; margin-bottom: 16px;" onclick="document.getElementById('tutorDocInput').click()">
             <i class="fas fa-file-upload" style="font-size: 24px; color: var(--primary); margin-bottom: 8px;"></i>
@@ -519,7 +514,6 @@
           </div>
         </div>
 
-        <!-- WHITEBOARD -->
         <div class="tutor-whiteboard" id="tutorWhiteboard">
           <div style="text-align: center; color: var(--text-light); width: 100%; margin-top: 100px;">
             <i class="fas fa-chalkboard-teacher" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
@@ -558,8 +552,7 @@
       </div>
     </div>
 
-    <!-- ================= OTHER TOOLS (Restored) ================= -->
-        <!-- Quiz -->
+    <!-- ================= OTHER TOOLS ================= -->
     <div id="page-quiz" class="page">
       <div class="back-link" onclick="showPage('dashboard')"><i class="fas fa-arrow-left"></i> Back</div>
       <h2 style="margin-bottom: 16px;">Quiz Generator</h2>
@@ -574,14 +567,12 @@
           <textarea id="qzIn" class="form-control" placeholder="e.g. Cell biology..."></textarea>
         </div>
         <button class="btn-primary" id="qzBtn">Start Quiz</button>
-        <p class="error-msg" id="qzErr" style="display:none; color: var(--red); margin-top: 8px;"></p>
       </div>
       <div class="card-panel" id="qzWrap" style="min-height: 150px; background:#fff; border-radius: 16px; padding: 20px; margin-top:16px;">
         <p class="output-empty">Your quiz will appear here.</p>
       </div>
     </div>
 
-    <!-- Flashcards -->
     <div id="page-flashcards" class="page">
       <div class="back-link" onclick="showPage('dashboard')"><i class="fas fa-arrow-left"></i> Back</div>
       <h2 style="margin-bottom: 16px;">Flash Cards</h2>
@@ -603,7 +594,6 @@
       </div>
     </div>
 
-    <!-- Grammar -->
     <div id="page-grammar" class="page">
       <div class="back-link" onclick="showPage('dashboard')"><i class="fas fa-arrow-left"></i> Back</div>
       <h2 style="margin-bottom: 16px;">Grammar Check</h2>
@@ -614,7 +604,6 @@
       </div>
     </div>
 
-    <!-- Summarizer -->
     <div id="page-summarizer" class="page">
       <div class="back-link" onclick="showPage('dashboard')"><i class="fas fa-arrow-left"></i> Back</div>
       <h2 style="margin-bottom: 16px;">Summarizer</h2>
@@ -625,7 +614,6 @@
       </div>
     </div>
 
-    <!-- Word Counter -->
     <div id="page-counter" class="page">
       <div class="back-link" onclick="showPage('dashboard')"><i class="fas fa-arrow-left"></i> Back</div>
       <h2 style="margin-bottom: 16px;">Word Counter</h2>
@@ -639,7 +627,6 @@
       </div>
     </div>
 
-    <!-- Citation -->
     <div id="page-citation" class="page">
       <div class="back-link" onclick="showPage('dashboard')"><i class="fas fa-arrow-left"></i> Back</div>
       <h2 style="margin-bottom: 16px;">AI Citation</h2>
@@ -650,7 +637,6 @@
       </div>
     </div>
 
-    <!-- ================= EXAM PREP PLANNER ================= -->
     <div id="page-examprep" class="page">
       <div class="back-link" onclick="showPage('dashboard')" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-muted);margin-bottom:16px;font-weight:600;cursor:pointer;"><i class="fas fa-arrow-left"></i> Back to Dashboard</div>
       <div class="tool-header" style="margin-bottom:24px;">
@@ -659,22 +645,15 @@
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
-        <!-- Setup Section -->
         <div class="card-panel" style="background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:24px;">
           <h3 style="margin-bottom: 16px; font-size: 16px; font-weight: 700;">1. Setup Modules</h3>
-          
-          <div id="modulesContainer">
-            <!-- Modules will be injected here -->
-          </div>
-
+          <div id="modulesContainer"></div>
           <button class="btn-secondary" style="width: 100%; margin-bottom: 20px; border-style: dashed;" onclick="addModuleInput()" id="addModuleBtn">
             <i class="fas fa-plus"></i> Add Module (Max 10)
           </button>
-
           <button class="btn-primary" id="generatePlanBtn" style="width: 100%;">Build My Study Plan</button>
         </div>
 
-        <!-- Generated Plan Section -->
         <div class="card-panel" style="background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:24px; max-height: 600px; overflow-y: auto;">
           <h3 style="margin-bottom: 16px; font-size: 16px; font-weight: 700; display: flex; justify-content: space-between;">
             Your Live Schedule
@@ -686,7 +665,6 @@
         </div>
       </div>
 
-      <!-- Dynamic Focus Timer -->
       <div class="card-panel hidden" id="timerContainer" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid var(--primary); border-radius: var(--radius); padding: 24px; text-align: center; position: sticky; bottom: 20px; box-shadow: var(--shadow-lg); z-index: 50;">
         <h3 style="margin-bottom: 8px; color: var(--primary); font-size: 20px;" id="timerSubjectTitle">Focus Session</h3>
         <div style="font-size: 48px; font-weight: 800; color: var(--text-main); margin-bottom: 16px;" id="timerDisplay">25:00</div>
@@ -698,7 +676,6 @@
       </div>
     </div>
     
-    <!-- GradePilot -->
     <div id="page-gradepilot" class="page">
       <div class="back-link" onclick="showPage('dashboard')"><i class="fas fa-arrow-left"></i> Back</div>
       <h2 style="margin-bottom: 16px;">GradePilot</h2>
@@ -713,7 +690,6 @@
       </div>
     </div>
     
-    <!-- Research -->
     <div id="page-research" class="page">
        <div class="back-link" onclick="showPage('dashboard')"><i class="fas fa-arrow-left"></i> Back</div>
        <h2 style="margin-bottom: 16px;">Research Guide</h2>
@@ -728,7 +704,6 @@
        </div>
     </div>
     
-    <!-- Performance -->
     <div id="page-performance" class="page">
       <div class="back-link" onclick="showPage('dashboard')"><i class="fas fa-arrow-left"></i> Back</div>
       <h2 style="margin-bottom: 16px;">My Performance</h2>
@@ -783,7 +758,6 @@
   </div>
 </div>
 
-<!-- ================= FIREBASE AUTH MODAL ================= -->
 <div class="modal-overlay" id="authModal">
   <div class="modal-box">
     <button class="modal-close" onclick="closeAuthModal()">&times;</button>
@@ -1057,7 +1031,6 @@
       const result = data.result || data.answer || '';
       
       outputBox.textContent = result;
-      // Auto-score the output
       checkAIScore(result, 'output');
       
     } catch (e) {
@@ -1242,18 +1215,260 @@
 
   function unlockSpeech() { if (!('speechSynthesis' in window)) return; window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(' '); u.volume = 0; window.speechSynthesis.speak(u); }
 
+  function splitForSpeech(text, max = 180) {
+    const clean = text.replace(/[•*#`]/g, ' ').replace(/\s+/g, ' ').trim();
+    const sentences = clean.match(/[^.!?:;]+[.!?:;]*\s*/g) || [clean];
+    const chunks = []; let cur = '';
+    for (const s of sentences) { if ((cur + s).length > max && cur) { chunks.push(cur.trim()); cur = s; } else cur += s; }
+    if (cur.trim()) chunks.push(cur.trim()); return chunks;
+  }
+
+  function pickVoice() {
+    const voices = window.speechSynthesis.getVoices();
+    const en = voices.filter(v => /^en/i.test(v.lang));
+    const lang = v => v.lang.replace('_', '-');
+    return en.find(v => /Natural/i.test(v.name) && lang(v) === 'en-ZA') || en.find(v => /Natural/i.test(v.name)) || en.find(v => lang(v) === 'en-ZA' && v.localService) || en.find(v => /Microsoft/i.test(v.name) && v.localService) || en.find(v => v.localService) || en[0] || voices[0] || null;
+  }
+
   function renderWhiteboardTypewriter(fullText) {
     const whiteboard = document.getElementById('tutorWhiteboard'); const session = ++speechSession;
-    whiteboard.innerHTML = `<div class="whiteboard-content" style="width: 100%;"><div style="display:flex;justify-content:space-between;margin-bottom:20px;"><h3 style="color:var(--primary);">Lesson</h3><button id="voiceToggleBtn" class="btn-secondary">Voice Active</button></div><div id="typedText" style="white-space: pre-wrap; line-height: 1.8;"></div></div>`;
+    whiteboard.innerHTML = `<div class="whiteboard-content" style="width: 100%; max-width: 800px;"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;"><h3 style="margin: 0; color: var(--primary);">Lesson Explanation</h3><button id="voiceToggleBtn" class="btn-secondary" style="padding: 6px 12px; font-size: 12px; display: flex; align-items: center; gap: 6px;"><i class="fas fa-volume-up"></i> Voice Active</button></div><div id="typedText" class="cursor-blink" style="white-space: pre-wrap; line-height: 1.8; font-size: 16px; color: var(--text-main);"></div></div>`;
     const textEl = document.getElementById('typedText'); const voiceBtn = document.getElementById('voiceToggleBtn'); const synth = window.speechSynthesis;
-    const chunks = splitForSpeech(fullText); let idx = 0; let paused = false;
-    function speakFrom(i) {
-      if (session !== speechSession || i >= chunks.length) { voiceBtn.style.display = 'none'; return; }
-      idx = i; const u = new SpeechSynthesisUtterance(chunks[i]); u.rate = 1.0;
-      u.onend = () => { if (session === speechSession && !paused) speakFrom(i + 1); };
-      synth.speak(u);
+
+    if (!('speechSynthesis' in window)) { voiceBtn.style.display = 'none'; }
+    else {
+      const chunks = splitForSpeech(fullText); let idx = 0; let paused = false; let started = false;
+      const setBtn = (icon, label, color) => { voiceBtn.innerHTML = `<i class="fas ${icon}"></i> ${label}`; voiceBtn.style.color = color; };
+      function speakFrom(i) {
+        if (session !== speechSession || i >= chunks.length) { if(session === speechSession) voiceBtn.style.display = 'none'; return; }
+        idx = i; const tok = ++utterToken; const u = new SpeechSynthesisUtterance(chunks[i]); const v = pickVoice();
+        if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = 'en-US'; }
+        u.rate = 1.0; u.pitch = 1.0;
+        u.onend = () => { if (tok !== utterToken || session !== speechSession || paused) return; speakFrom(i + 1); };
+        u.onerror = (e) => { if (tok !== utterToken || session !== speechSession) return; if (e.error === 'canceled' || e.error === 'interrupted') return; if (e.error === 'not-allowed') { paused = true; setBtn('fa-volume-mute', 'Tap to enable voice', 'var(--primary)'); return; } speakFrom(i + 1); };
+        window.__currentUtterance = u; synth.speak(u);
+      }
+      function start() { if (started) return; started = true; synth.cancel(); setTimeout(() => speakFrom(0), 150); }
+      if (synth.getVoices().length) { start(); } else { synth.onvoiceschanged = () => { synth.onvoiceschanged = null; start(); }; setTimeout(start, 1000); }
+      voiceBtn.onclick = () => {
+        if (!paused) { paused = true; utterToken++; synth.cancel(); setBtn('fa-volume-mute', 'Voice Paused', 'var(--primary)'); }
+        else { paused = false; utterToken++; synth.cancel(); setBtn('fa-volume-up', 'Voice Active', 'var(--text-main)'); setTimeout(() => speakFrom(idx), 100); }
+      };
     }
-    if (synth.getVoices().length) { synth.cancel();
-</script>                                   
+    let i = 0; const words = fullText.split(' ');
+    function typeWord() {
+      if (session !== speechSession) return;
+      if (i < words.length) { textEl.textContent += words[i] + ' '; i++; whiteboard.scrollTop = whiteboard.scrollHeight; setTimeout(typeWord, 120 + (words[i - 1].length * 15)); }
+      else { textEl.classList.remove('cursor-blink'); }
+    }
+    setTimeout(typeWord, 600);
+  }
+
+  // ==================== HELPERS ====================
+  async function callWorker(action, text, system) {
+    const res = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, text, system: system || undefined }) });
+    const d = await res.json();
+    if (!res.ok || d.error) throw new Error(d.error || 'Worker error');
+    return d.result || d.answer || '';
+  }
+
+  // Grammar
+  document.getElementById('grammarBtn').onclick = async () => {
+    const t = document.getElementById('grammarIn').value.trim(); const out = document.getElementById('grammarOut');
+    if (!t) { out.innerHTML = 'Please paste text.'; return; } out.innerHTML = 'Checking...';
+    try { out.textContent = await callWorker('grammar', t); } catch (e) { out.innerHTML = 'Error'; }
+  };
+
+  // Summarizer
+  document.getElementById('sumBtn').onclick = async () => {
+    const t = document.getElementById('sumIn').value.trim(); const out = document.getElementById('sumOut');
+    if (!t) { out.innerHTML = 'Please paste text.'; return; } out.innerHTML = 'Summarizing...';
+    try { out.textContent = await callWorker('summarizer', t); } catch (e) { out.innerHTML = 'Error'; }
+  };
+
+  // Word Counter
+  document.getElementById('wcIn').addEventListener('input', () => {
+    const t = document.getElementById('wcIn').value;
+    document.getElementById('wcW').textContent = (t.match(/\S+/g) || []).length;
+    document.getElementById('wcC').textContent = t.length;
+    document.getElementById('wcS').textContent = (t.match(/[^.!?]+[.!?]+/g) || []).length;
+  });
+
+  // Citation
+  document.getElementById('citeBtn').onclick = async () => {
+    const t = document.getElementById('citeIn').value.trim(); const out = document.getElementById('citeOut');
+    if (!t) return; out.innerHTML = 'Generating...';
+    try { out.textContent = await callWorker('citation', t); } catch (e) { out.innerHTML = 'Error'; }
+  };
+
+  async function readDoc(file) {
+    const name = file.name.toLowerCase();
+    if (name.endsWith('.docx')) { await loadScript('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js'); return (await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() })).value; }
+    if (name.endsWith('.pdf')) {
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise; let out = '';
+      for (let i = 1; i <= pdf.numPages; i++) { const c = await (await pdf.getPage(i)).getTextContent(); out += c.items.map(x => x.str).join(' ') + '\n'; }
+      return out;
+    }
+    throw new Error('Unsupported file');
+  }
+
+  function loadScript(src) {
+    return new Promise((ok, no) => {
+      if (document.querySelector(`script[src="${src}"]`)) return ok();
+      const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s);
+    });
+  }
+
+  // ==================== EXAM PREP PLANNER & TIMER ====================
+  let examModules = [];
+  let moduleCounter = 0;
+  let timerInterval = null;
+  let currentTimerSeconds = 25 * 60;
+  let timerRunning = false;
+
+  function addModuleInput() {
+    if (examModules.length >= 10) { alert("You can only add a maximum of 10 modules."); return; }
+    moduleCounter++; const id = 'mod_' + moduleCounter;
+    examModules.push({ id, name: '', date: '', materials: [] });
+    const container = document.getElementById('modulesContainer'); const div = document.createElement('div');
+    div.id = id; div.style.cssText = "border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; background: var(--bg-main);";
+    div.innerHTML = `
+      <div style="display: flex; justify-content: space-between; margin-bottom: 12px;"><strong style="font-size: 14px;">Module ${examModules.length}</strong><button style="color: var(--red); background: none; border: none; cursor: pointer;" onclick="removeModule('${id}')"><i class="fas fa-trash"></i></button></div>
+      <div class="form-group"><input type="text" class="form-control" placeholder="Subject / Module Name" oninput="updateModuleData('${id}', 'name', this.value)"></div>
+      <div class="form-group"><label style="font-size: 11px;">Exam Date & Time</label><input type="datetime-local" class="form-control" onchange="updateModuleData('${id}', 'date', this.value)"></div>
+      <div style="background: #fff; padding: 12px; border-radius: 6px; border: 1px solid var(--border);"><label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 8px;">Study Materials (Max 15)</label><div id="fileList_${id}" style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">No documents uploaded.</div><input type="file" id="fileInput_${id}" multiple accept=".pdf,.docx" style="display: none;" onchange="handleModuleFiles('${id}', this)"><button class="btn-secondary" style="width: 100%; font-size: 11px; padding: 6px;" onclick="document.getElementById('fileInput_${id}').click()"><i class="fas fa-upload"></i> Upload Docs</button></div>
+    `;
+    container.appendChild(div);
+    if (examModules.length >= 10) { document.getElementById('addModuleBtn').style.display = 'none'; }
+  }
+
+  function removeModule(id) { examModules = examModules.filter(m => m.id !== id); document.getElementById(id).remove(); if (examModules.length < 10) { document.getElementById('addModuleBtn').style.display = 'block'; } }
+  function updateModuleData(id, key, value) { const mod = examModules.find(m => m.id === id); if (mod) mod[key] = value; }
+
+  async function handleModuleFiles(id, input) {
+    const files = Array.from(input.files); const mod = examModules.find(m => m.id === id); if (!mod) return;
+    if (mod.materials.length + files.length > 15) { alert('You can only upload a maximum of 15 documents per module.'); return; }
+    const listEl = document.getElementById(`fileList_${id}`); listEl.innerHTML = 'Reading files & counting pages...';
+    for (let file of files) { try { const text = await readDoc(file); const pages = Math.max(1, Math.ceil(text.length / 3000)); mod.materials.push({ name: file.name, pages: pages }); } catch (e) { console.error(e); } }
+    listEl.innerHTML = mod.materials.map((m, i) => `<div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>${i+1}. ${m.name}</span><span style="font-weight: bold; color: var(--primary);">${m.pages} pgs</span></div>`).join('');
+    input.value = '';
+  }
+
+  document.getElementById('generatePlanBtn').onclick = () => {
+    const validModules = examModules.filter(m => m.name && m.date && m.materials.length > 0);
+    if (validModules.length === 0) { alert('Please fill in at least one module, select a future date, and upload materials.'); return; }
+    const loading = document.getElementById('planLoading'); loading.classList.remove('hidden'); document.getElementById('generatePlanBtn').disabled = true;
+    setTimeout(() => { try { const schedule = buildSchedule(validModules); saveSchedule(schedule); } catch (e) { alert("Error building schedule: " + e.message); } finally { loading.classList.add('hidden'); document.getElementById('generatePlanBtn').disabled = false; } }, 100);
+  };
+
+  function buildSchedule(modules) {
+    const schedule = []; const now = new Date(); now.setHours(0, 0, 0, 0);
+    const blocks = [{ start: 8, end: 10.5, label: '08:00 - 10:30' }, { start: 13, end: 15.5, label: '13:00 - 15:30' }, { start: 18, end: 20, label: '18:00 - 20:00' }];
+    modules.forEach(mod => {
+      const examDate = new Date(mod.date); examDate.setHours(0,0,0,0); let daysLeft = Math.ceil((examDate - now) / (1000 * 60 * 60 * 24)); if (daysLeft <= 0) daysLeft = 1;
+      const totalPages = mod.materials.reduce((sum, m) => sum + m.pages, 0); const pagesPerDay = Math.ceil(totalPages / daysLeft); let currentDay = new Date(now); let currentPage = 1;
+      for (let d = 0; d < daysLeft; d++) {
+        if (currentPage > totalPages) break;
+        const dayString = currentDay.toLocaleDateString('en-ZA', { weekday: 'long', month: 'short', day: 'numeric' }); const dayTasks = []; const pagesPerBlock = Math.ceil(pagesPerDay / blocks.length);
+        blocks.forEach((block) => { if (currentPage > totalPages) return; const endPage = Math.min(currentPage + pagesPerBlock - 1, totalPages); const docName = mod.materials[0].name.replace(/\.[^/.]+$/, ""); dayTasks.push({ time: block.label, task: `Study: ${docName}`, details: `Pages ${currentPage} - ${endPage}` }); currentPage = endPage + 1; });
+        dayTasks.push({ time: '20:30 - 21:30', task: `Revision: ${mod.name}`, details: `Review what you learned today.` });
+        schedule.push({ dateStr: dayString, timestamp: currentDay.getTime(), moduleName: mod.name, tasks: dayTasks });
+        currentDay.setDate(currentDay.getDate() + 1);
+      }
+    });
+    schedule.sort((a, b) => a.timestamp - b.timestamp); return schedule;
+  }
+
+  function saveSchedule(schedule) { localStorage.setItem('studypad_exam_schedule', JSON.stringify(schedule)); renderSavedPlans(); }
+
+  function renderSavedPlans() {
+    const saved = JSON.parse(localStorage.getItem('studypad_exam_schedule') || '[]'); const container = document.getElementById('savedPlansList');
+    if (saved.length === 0) { container.innerHTML = '<p style="font-size: 13px; color: var(--text-muted); text-align: center; margin-top: 40px;">No plan generated yet.</p>'; return; }
+    const today = new Date(); today.setHours(0,0,0,0); const todayTime = today.getTime();
+    container.innerHTML = saved.map(day => {
+      const isPast = day.timestamp < todayTime; const isToday = day.timestamp === todayTime;
+      let borderColor = 'var(--border)', bgColor = '#fff', titleColor = 'var(--text-main)';
+      if (isToday) { borderColor = 'var(--primary)'; bgColor = 'var(--primary-light)'; titleColor = 'var(--primary)'; } else if (isPast) { borderColor = 'var(--border)'; bgColor = 'var(--bg-main)'; titleColor = 'var(--text-light)'; }
+      const tasksHtml = day.tasks.map(t => `<div style="display: flex; gap: 12px; margin-bottom: 12px; opacity: ${isPast ? 0.5 : 1};"><div style="font-size: 11px; font-weight: 700; color: var(--text-muted); width: 90px; flex-shrink: 0;">${t.time}</div><div><div style="font-size: 13px; font-weight: 600; color: ${titleColor};">${t.task}</div><div style="font-size: 12px; color: var(--text-muted);">${t.details}</div></div></div>`).join('');
+      return `<div style="border: 2px solid ${borderColor}; background: ${bgColor}; border-radius: 8px; padding: 16px; margin-bottom: 16px;"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid ${borderColor}; padding-bottom: 8px;"><h4 style="font-weight: 800; font-size: 14px; color: ${titleColor};">${day.dateStr} ${isToday ? '(TODAY)' : ''}</h4><span style="font-size: 11px; font-weight: 600; background: #fff; padding: 2px 8px; border-radius: 999px; border: 1px solid ${borderColor};">${day.moduleName}</span></div>${tasksHtml}<button class="btn-secondary" style="width: 100%; font-size: 12px; padding: 8px; margin-top: 8px;" onclick="openFocusTimer('${day.moduleName.replace(/'/g, "\\'")}')"><i class="fas fa-play-circle"></i> Start Session</button></div>`;
+    }).join('');
+  }
+
+  function openFocusTimer(subject) {
+    const container = document.getElementById('timerContainer'); container.classList.remove('hidden');
+    document.getElementById('timerSubjectTitle').textContent = `Focus: ${subject}`; document.getElementById('timerStatus').textContent = 'Ready to focus. The voice assistant will guide you.';
+    container.scrollIntoView({ behavior: 'smooth', block: 'center' }); stopFocusTimer(); currentTimerSeconds = 25 * 60; updateTimerDisplay();
+  }
+
+  function startFocusTimer() {
+    if (timerRunning) return; timerRunning = true;
+    const startBtn = document.getElementById('timerStartBtn'); startBtn.disabled = true; startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running...';
+    speakText("Focus session started. You have 25 minutes. Let's get to work."); document.getElementById('timerStatus').textContent = 'Focus session in progress...';
+    timerInterval = setInterval(() => {
+      currentTimerSeconds--; updateTimerDisplay();
+      if (currentTimerSeconds === 750) speakText("You are halfway through your focus session. Keep going!");
+      if (currentTimerSeconds <= 0) { clearInterval(timerInterval); timerRunning = false; speakText("Focus session complete! Great job. Take a 5-minute break."); document.getElementById('timerStatus').textContent = 'Session complete! Take a break.'; startBtn.disabled = false; startBtn.innerHTML = '<i class="fas fa-play"></i> Start'; }
+    }, 1000);
+  }
+
+  function stopFocusTimer() {
+    if (timerInterval) clearInterval(timerInterval); timerRunning = false;
+    const startBtn = document.getElementById('timerStartBtn'); if (startBtn) { startBtn.disabled = false; startBtn.innerHTML = '<i class="fas fa-play"></i> Start'; }
+    window.speechSynthesis.cancel(); document.getElementById('timerStatus').textContent = 'Timer stopped.';
+  }
+
+  function updateTimerDisplay() { const m = Math.floor(currentTimerSeconds / 60).toString().padStart(2, '0'); const s = (currentTimerSeconds % 60).toString().padStart(2, '0'); document.getElementById('timerDisplay').textContent = `${m}:${s}`; }
+  function speakText(text) { if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.rate = 1.0; u.pitch = 1.0; window.speechSynthesis.speak(u); } }
+
+  // ==================== RESEARCH GUIDE ====================
+  const researchData = {
+    'research-1': { title: "1. What is Research?", content: "<p><strong>Definition:</strong> Research is a careful, systematic, and patient investigation in a field of knowledge.</p><br><p><strong>Purpose:</strong> Discover new knowledge, solve problems, and develop theories.</p><br><p><em>(You can add more content here later by editing the <code>researchData</code> object in the JavaScript.)</em></p>" },
+    'research-2': { title: "2. Formulating the Research Problem & Gap", content: "<p>A research problem is a specific issue or gap in existing knowledge that you aim to address.</p><br><p><strong>Where problems arise:</strong> Real-world issues, something not happening, or something misunderstood.</p>" },
+    'research-3': { title: "3. Research Aim, Objectives & Hypotheses", content: "<p><strong>Aim:</strong> A broad statement of purpose (1-3 sentences).</p><br><p><strong>Objectives:</strong> Specific, operational statements.</p><br><p><strong>Hypotheses:</strong> Testable propositions about relationships.</p>" },
+    'research-4': { title: "4. Theoretical vs. Conceptual Frameworks", content: "<p><strong>Theoretical Framework:</strong> Established theory providing a lens.</p><br><p><strong>Conceptual Framework:</strong> Study-specific map showing important concepts.</p>" },
+    'research-5': { title: "5. Methodology, Design & Data Collection", content: "<p><strong>Methodology:</strong> Overall logic (Quantitative, Qualitative, Mixed Methods).</p><br><p><strong>Design:</strong> Blueprint (Case Study, Survey, Ethnography).</p>" },
+    'research-6': { title: "6. Ethics, Schedule & Budget", content: "<p><strong>Ethics:</strong> Voluntary Informed Consent, protection from harm.</p><br><p><strong>Schedule:</strong> Gantt chart or timeline.</p>" },
+    'research-7': { title: "7. Writing the Research Proposal", content: "<p><strong>Components:</strong> Title, Summary, Background, Problem, Justification, Objectives, Hypothesis, Methodology.</p>" }
+  };
+
+  function openResearchPage(id) {
+    const data = researchData[id]; if (!data) return;
+    document.getElementById('page-research').classList.remove('active');
+    let dynamicScreen = document.getElementById('page-research-dynamic');
+    if (!dynamicScreen) { dynamicScreen = document.createElement('div'); dynamicScreen.id = 'page-research-dynamic'; dynamicScreen.className = 'page'; document.querySelector('.main-content').appendChild(dynamicScreen); }
+    dynamicScreen.innerHTML = `<div class="back-link" onclick="closeResearchPage()" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-muted);margin-bottom:16px;font-weight:600;cursor:pointer;"><i class="fas fa-arrow-left"></i> Back to Research Guide</div><div class="tool-header" style="margin-bottom:24px;"><h2 style="font-size:28px;font-weight:800;margin-bottom:6px;">${data.title}</h2></div><div class="card-panel" style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:32px; font-size: 16px; line-height: 1.8; color: var(--text-main); min-height: 400px;">${data.content}</div>`;
+    dynamicScreen.classList.add('active'); window.scrollTo(0,0);
+  }
+
+  function closeResearchPage() { document.getElementById('page-research-dynamic').classList.remove('active'); showPage('research'); }
+
+  // Init on load
+  document.addEventListener('DOMContentLoaded', () => { addModuleInput(); renderSavedPlans(); });
+  if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+
+  // ==================== EXPORTS ====================
+  window.showPage = showPage;
+  window.toggleSubmenu = toggleSubmenu;
+  window.handleSearch = handleSearch;
+  window.switchDocTab = switchDocTab;
+  window.handleStudentUpload = handleStudentUpload;
+  window.runStudentDetector = runStudentDetector;
+  window.downloadProfessionalReport = downloadProfessionalReport;
+  window.handleLecturerUpload = handleLecturerUpload;
+  window.handleTutorUpload = handleTutorUpload;
+  window.openPricing = openPricing;
+  window.closePricing = closePricing;
+  window.startCheckout = startCheckout;
+  window.verifyDevCode = verifyDevCode;
+  window.closeDevModal = closeDevModal;
+  window.copyOutput = copyOutput;
+  window.downloadTxt = downloadTxt;
+  window.openResearchPage = openResearchPage;
+  window.closeResearchPage = closeResearchPage;
+  window.runHumanizer = runHumanizer;
+  window.clearHumanizer = clearHumanizer;
+</script>
 </body>
 </html>
