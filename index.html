@@ -1162,7 +1162,7 @@
     try {
       const res = await fetch(AI_DETECT_API, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: currentDocText.substring(0, 5000) })
+        body: JSON.stringify({ text: currentDocText }) // <--- Removed the 5000 character limit
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
