@@ -377,40 +377,64 @@
 
     <!-- ================= HUMANIZER ================= -->
     <div id="page-humanizer" class="page">
-      <div class="back-link" onclick="showPage('dashboard')" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-muted);margin-bottom:16px;font-weight:600;cursor:pointer;"><i class="fas fa-arrow-left"></i> Back to Dashboard</div>
-      <div class="tool-header" style="margin-bottom:24px;">
-        <h2 style="font-size:28px;font-weight:800;margin-bottom:6px;">AI Humanizer</h2>
-        <p style="color:var(--text-muted);font-size:14px;">Improve readability, clarity and tone of your academic writing.</p>
+  <div class="back-link" onclick="showPage('dashboard')" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-muted);margin-bottom:16px;font-weight:600;cursor:pointer;"><i class="fas fa-arrow-left"></i> Back to Dashboard</div>
+  <div class="tool-header" style="margin-bottom:24px;">
+    <h2 style="font-size:28px;font-weight:800;margin-bottom:6px;">AI Humanizer</h2>
+    <p style="color:var(--text-muted);font-size:14px;">Improve readability, clarity and tone of your academic writing.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+    <div class="card-panel" style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
+      <div class="flex" style="justify-content: space-between; margin-bottom: 12px;">
+        <label style="font-weight: 600; font-size: 13px;">Input text</label>
+        <span style="font-size: 12px; color: var(--text-muted);"><span id="hWordCount">0</span> words</span>
+      </div>
+      <textarea id="hInput" class="form-control" placeholder="Paste your essay or assignment draft here..."></textarea>
+      
+      <!-- Auto AI Score (Input) -->
+      <div id="inputScoreContainer" class="hidden" style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border);">
+        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+          <span id="inputScoreLabel" style="font-weight:700;">0% AI-Written</span>
+          <span>0-100%</span>
+        </div>
+        <div class="progress-bg" style="height: 8px; background: var(--bg-main); border-radius: 999px; overflow: hidden;">
+          <div class="progress-fill" id="inputScoreBar" style="height: 100%; width: 0%; background: var(--green); border-radius: 999px; transition: width 0.4s;"></div>
+        </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-        <div class="card-panel" style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
-          <div class="flex" style="justify-content: space-between; margin-bottom: 12px;">
-            <label style="font-weight: 600; font-size: 13px;">Input text</label>
-            <span style="font-size: 12px; color: var(--text-muted);"><span id="hWordCount">0</span> words</span>
-          </div>
-          <textarea id="hInput" class="form-control" placeholder="Paste your essay or assignment draft here..."></textarea>
-          <div style="display: flex; gap: 12px; margin-top: 16px;">
-            <button class="btn-primary" id="hRunBtn" onclick="runHumanizer()" style="flex: 2;">✨ Humanize Text</button>
-            <button class="btn-secondary" onclick="clearHumanizer()" style="flex: 1;">Clear</button>
-          </div>
-          <p id="hError" style="color: var(--red); font-size: 13px; margin-top: 8px; display: none;"></p>
-        </div>
+      <div style="display: flex; gap: 12px; margin-top: 16px;">
+        <button class="btn-primary" id="hRunBtn" onclick="runHumanizer()" style="flex: 2;">✨ Humanize Text</button>
+        <button class="btn-secondary" onclick="clearHumanizer()" style="flex: 1;">Clear</button>
+      </div>
+      <p id="hError" style="color: var(--red); font-size: 13px; margin-top: 8px; display: none;"></p>
+    </div>
 
-        <div class="card-panel" style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
-          <div class="flex" style="justify-content: space-between; margin-bottom: 12px;">
-            <label style="font-weight: 600; font-size: 13px;">Output</label>
-            <span id="hStatus" style="font-size: 12px; padding: 2px 8px; background: var(--bg-main); border-radius: 999px;">Ready</span>
-          </div>
-          <div class="output-box" id="hOutput"><p class="output-empty" style="color:var(--text-light);font-style:italic;">Your improved text will appear here.</p></div>
-          <div id="hHumanizedBanner" class="hidden" style="margin-top: 16px; padding: 12px; border-radius: var(--radius-sm); font-weight: 600; font-size: 13px; text-align: center;"></div>
-          <div style="display: flex; gap: 12px; margin-top: 16px;">
-            <button class="btn-secondary" onclick="copyOutput()" style="flex: 1;">📋 Copy</button>
-            <button class="btn-secondary" onclick="downloadTxt()" style="flex: 1;">⬇ .txt</button>
-          </div>
+    <div class="card-panel" style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
+      <div class="flex" style="justify-content: space-between; margin-bottom: 12px;">
+        <label style="font-weight: 600; font-size: 13px;">Output</label>
+        <span id="hStatus" style="font-size: 12px; padding: 2px 8px; background: var(--bg-main); border-radius: 999px;">Ready</span>
+      </div>
+      <div class="output-box" id="hOutput"><p class="output-empty" style="color:var(--text-light);font-style:italic;">Your improved text will appear here.</p></div>
+      
+      <!-- Auto AI Score (Output) -->
+      <div id="outputScoreContainer" class="hidden" style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border);">
+        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+          <span id="outputScoreLabel" style="font-weight:700;">0% AI-Written</span>
+          <span>0-100%</span>
         </div>
+        <div class="progress-bg" style="height: 8px; background: var(--bg-main); border-radius: 999px; overflow: hidden;">
+          <div class="progress-fill" id="outputScoreBar" style="height: 100%; width: 0%; background: var(--green); border-radius: 999px; transition: width 0.4s;"></div>
+        </div>
+      </div>
+
+      <div id="hHumanizedBanner" class="hidden" style="margin-top: 16px; padding: 12px; border-radius: var(--radius-sm); font-weight: 600; font-size: 13px; text-align: center;"></div>
+      <div style="display: flex; gap: 12px; margin-top: 16px;">
+        <button class="btn-secondary" onclick="copyOutput()" style="flex: 1;">📋 Copy</button>
+        <button class="btn-secondary" onclick="downloadTxt()" style="flex: 1;">⬇ .txt</button>
       </div>
     </div>
+  </div>
+</div>
 
     <!-- ================= DOCUMENT CENTRE (AI DETECTOR) ================= -->
     <div id="page-documents" class="page">
@@ -535,12 +559,20 @@
     </div>
 
     <!-- ================= OTHER TOOLS (Restored) ================= -->
-    <!-- Quiz -->
+        <!-- Quiz -->
     <div id="page-quiz" class="page">
       <div class="back-link" onclick="showPage('dashboard')"><i class="fas fa-arrow-left"></i> Back</div>
       <h2 style="margin-bottom: 16px;">Quiz Generator</h2>
       <div class="card-panel" style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
-        <div class="form-group"><label>Topic or Notes</label><textarea id="qzIn" class="form-control" placeholder="e.g. Cell biology..."></textarea></div>
+        <div class="upload-zone" onclick="document.getElementById('qzFile').click()">
+          <i class="fas fa-file-upload"></i>
+          <p>Upload PDF or Word</p>
+          <input type="file" id="qzFile" accept=".pdf,.docx" onchange="handleQuizFile(this)">
+        </div>
+        <div class="form-group" style="margin-top: 16px;">
+          <label>Or type a topic:</label>
+          <textarea id="qzIn" class="form-control" placeholder="e.g. Cell biology..."></textarea>
+        </div>
         <button class="btn-primary" id="qzBtn">Start Quiz</button>
         <p class="error-msg" id="qzErr" style="display:none; color: var(--red); margin-top: 8px;"></p>
       </div>
@@ -554,16 +586,20 @@
       <div class="back-link" onclick="showPage('dashboard')"><i class="fas fa-arrow-left"></i> Back</div>
       <h2 style="margin-bottom: 16px;">Flash Cards</h2>
       <div class="card-panel" style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
-        <div class="form-group"><label>Topic or Notes</label><textarea id="fcIn" class="form-control" placeholder="Topic or notes..."></textarea></div>
+        <div class="upload-zone" onclick="document.getElementById('fcFile').click()">
+          <i class="fas fa-file-upload"></i>
+          <p>Upload PDF or Word</p>
+          <input type="file" id="fcFile" accept=".pdf,.docx" onchange="handleFcFile(this)">
+        </div>
+        <div class="form-group" style="margin-top: 16px;">
+          <label>Or type a topic:</label>
+          <textarea id="fcIn" class="form-control" placeholder="Topic or notes..."></textarea>
+        </div>
         <button class="btn-primary" id="fcBtn">Generate Flashcards</button>
       </div>
       <div class="card-panel" id="fcCard" style="display: none; text-align: center; padding: 40px; background:#fff; border-radius: 16px; margin-top:16px;">
         <div style="font-size: 12px; text-transform: uppercase; color: var(--text-light); margin-bottom: 12px;" id="fcSide">Question</div>
         <div style="font-size: 20px; font-weight: 500;" id="fcText"></div>
-        <div class="flex" style="margin-top: 24px; justify-content: center;">
-          <button class="btn-secondary" id="fcFlip">Flip</button>
-          <button class="btn-primary" id="fcNext">Next →</button>
-        </div>
       </div>
     </div>
 
@@ -791,13 +827,11 @@
   let isLoginMode = true; 
   let isPremium = false;
 
-  // Monitor Auth State
   auth.onAuthStateChanged((user) => {
     if (user) {
       const email = user.email;
       const rawName = user.displayName || email.split('@')[0]; 
       const initials = rawName.substring(0, 2).toUpperCase();
-      
       document.getElementById('userName').textContent = rawName;
       document.getElementById('userAvatar').textContent = initials;
       
@@ -816,22 +850,13 @@
     }
   });
 
-  function openAuthModal() {
-    document.getElementById('authModal').classList.add('active');
-    document.getElementById('authError').style.display = 'none';
-    document.getElementById('authEmail').value = '';
-    document.getElementById('authPassword').value = '';
-  }
-
-  function closeAuthModal() {
-    document.getElementById('authModal').classList.remove('active');
-  }
-
+  function openAuthModal() { document.getElementById('authModal').classList.add('active'); document.getElementById('authError').style.display = 'none'; }
+  function closeAuthModal() { document.getElementById('authModal').classList.remove('active'); }
+  
   function toggleAuthMode(e) {
     e.preventDefault();
     isLoginMode = !isLoginMode;
     document.getElementById('authTitle').textContent = isLoginMode ? "Welcome Back" : "Create an Account";
-    document.getElementById('authSubtitle').textContent = isLoginMode ? "Log in to access your saved plans and tools." : "Join StudyPad to save your study progress.";
     document.getElementById('authBtn').textContent = isLoginMode ? "Log In" : "Sign Up";
     document.getElementById('authToggleText').textContent = isLoginMode ? "Don't have an account?" : "Already have an account?";
     document.getElementById('authToggleLink').textContent = isLoginMode ? "Sign Up" : "Log In";
@@ -843,20 +868,12 @@
     const btn = document.getElementById('authBtn');
     const err = document.getElementById('authError');
     
-    if (!email || !password) {
-      err.textContent = "Please enter both email and password.";
-      err.style.display = 'block';
-      return;
-    }
-    
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-    err.style.display = 'none';
+    if (!email || !password) { err.textContent = "Please enter both email and password."; err.style.display = 'block'; return; }
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...'; err.style.display = 'none';
 
     try {
-      if (isLoginMode) {
-        await auth.signInWithEmailAndPassword(email, password);
-      } else {
+      if (isLoginMode) await auth.signInWithEmailAndPassword(email, password);
+      else {
         const name = email.split('@')[0]; 
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         await userCredential.user.updateProfile({ displayName: name });
@@ -864,19 +881,13 @@
         location.reload(); 
       }
     } catch (error) {
-      err.textContent = error.message.replace("Firebase: ", "");
-      err.style.display = 'block';
+      err.textContent = error.message.replace("Firebase: ", ""); err.style.display = 'block';
     } finally {
-      btn.disabled = false;
-      btn.textContent = isLoginMode ? "Log In" : "Sign Up";
+      btn.disabled = false; btn.textContent = isLoginMode ? "Log In" : "Sign Up";
     }
   }
 
-  async function logoutUser() {
-    if(confirm("Are you sure you want to log out?")) {
-      await auth.signOut();
-    }
-  }
+  async function logoutUser() { if(confirm("Are you sure you want to log out?")) await auth.signOut(); }
 
   async function saveSettings() {
     const user = auth.currentUser;
@@ -888,9 +899,7 @@
         document.getElementById('userAvatar').textContent = newName.substring(0,2).toUpperCase();
         alert('Profile updated successfully!');
       }
-    } else {
-      alert('Please log in to save settings.');
-    }
+    } else alert('Please log in to save settings.');
   }
 
   // ==================== CONFIG ====================
@@ -901,94 +910,66 @@
 
   const PAYSTACK_ENABLED = false; 
 
-  // STATE
   let activeTier = 'free';
   let devClicks = 0;
-  
-  // DOCUMENT STATE
   let currentDocText = '';
   let currentDocScore = null;
   let currentDocName = '';
-
-  // TUTOR STATE
   let tutorPages = [];
-  let isSpeaking = false;
   let speechSession = 0;
   let utterToken = 0;
 
-  // ==================== INIT ====================
   document.addEventListener('DOMContentLoaded', () => {
     if (window.innerWidth <= 768) document.getElementById('mobileMenuBtn').style.display = 'block';
-    // Setup basic listeners
+    
+    // Auto-score Humanizer Input
+    let scoreTimeout;
     document.getElementById('hInput').addEventListener('input', (e) => {
-      document.getElementById('hWordCount').textContent = (e.target.value.match(/\S+/g) || []).length;
+      const text = e.target.value.trim();
+      document.getElementById('hWordCount').textContent = (text.match(/\S+/g) || []).length;
+      clearTimeout(scoreTimeout);
+      if (text.length > 10) {
+        scoreTimeout = setTimeout(() => checkAIScore(text, 'input'), 1500);
+      } else {
+        document.getElementById('inputScoreContainer').classList.add('hidden');
+      }
     });
   });
 
   function showPage(pageId) {
     const premiumPages = ['tutor', 'examprep', 'gradepilot', 'documents', 'quiz', 'flashcards'];
-    if (premiumPages.includes(pageId) && !isPremium) {
-      openPricing();
-      return;
-    }
+    if (premiumPages.includes(pageId) && !isPremium) { openPricing(); return; }
     
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    const target = document.getElementById('page-' + pageId);
-    if (target) target.classList.add('active');
+    document.getElementById('page-' + pageId).classList.add('active');
     document.getElementById('sidebar').classList.remove('open');
     window.scrollTo(0,0);
     
-    if (pageId !== 'tutor') {
-      speechSession++;
-      utterToken++;
-      window.speechSynthesis.cancel();
-      isSpeaking = false;
-    }
+    if (pageId !== 'tutor') { speechSession++; utterToken++; window.speechSynthesis.cancel(); }
   }
 
-  function toggleSubmenu(id) {
-    const el = document.getElementById('submenu-' + id);
-    if (el) el.classList.toggle('hidden');
-  }
+  function toggleSubmenu(id) { document.getElementById('submenu-' + id).classList.toggle('hidden'); }
 
-  // ==================== TRIAL & LOCKOUT SYSTEM ====================
-  const TRIAL_DAYS = 3;
-
+  // ==================== TRIAL & LOCKOUT ====================
   function checkTrialStatus() {
     const user = auth.currentUser;
     if (!user) return;
-
-    const trialKey = `studypad_trial_start_${user.uid}`;
-    const trialStart = localStorage.getItem(trialKey);
+    const trialStart = localStorage.getItem(`studypad_trial_start_${user.uid}`);
     const premiumExpiry = localStorage.getItem('studypad_premium_expiry');
 
     if (premiumExpiry && Date.now() < parseInt(premiumExpiry)) {
-      isPremium = true;
-      unlockApp();
-      document.getElementById('trialStatusText').textContent = "Premium";
-      return;
+      isPremium = true; unlockApp(); document.getElementById('trialStatusText').textContent = "Premium"; return;
     }
-
     if (!trialStart) {
-      localStorage.setItem(trialKey, Date.now().toString());
-      isPremium = true;
-      unlockApp();
-      document.getElementById('trialStatusText').textContent = "Trial: 3 days left";
-      return;
+      localStorage.setItem(`studypad_trial_start_${user.uid}`, Date.now().toString());
+      isPremium = true; unlockApp(); document.getElementById('trialStatusText').textContent = "Trial: 3 days left"; return;
     }
-
-    const trialDuration = TRIAL_DAYS * 24 * 60 * 60 * 1000;
     const timePassed = Date.now() - parseInt(trialStart);
-
-    if (timePassed > trialDuration) {
-      isPremium = false;
-      lockApp(); 
-      document.getElementById('trialStatusText').textContent = "Trial Expired";
+    if (timePassed > (3 * 24 * 60 * 60 * 1000)) {
+      isPremium = false; lockApp(); document.getElementById('trialStatusText').textContent = "Trial Expired";
     } else {
-      const daysLeft = Math.ceil((trialDuration - timePassed) / (1000 * 60 * 60 * 24));
-      isPremium = true;
-      unlockApp();
-      document.getElementById('trialStatusText').textContent = `Trial: ${daysLeft} days left`;
+      const daysLeft = Math.ceil(((3 * 24 * 60 * 60 * 1000) - timePassed) / (1000 * 60 * 60 * 24));
+      isPremium = true; unlockApp(); document.getElementById('trialStatusText').textContent = `Trial: ${daysLeft} days left`;
     }
   }
 
@@ -996,7 +977,6 @@
     document.querySelectorAll('.lock-overlay').forEach(el => el.classList.add('hidden'));
     document.querySelectorAll('.locked-result').forEach(el => el.classList.remove('locked-result'));
   }
-
   function lockApp() {
     document.querySelectorAll('.lock-overlay').forEach(el => el.classList.remove('hidden'));
     document.querySelectorAll('.output-box, #dtRes').forEach(el => el.classList.add('locked-result'));
@@ -1004,15 +984,11 @@
 
   function openPricing() { document.getElementById('pricingModal').classList.add('active'); }
   function closePricing() { document.getElementById('pricingModal').classList.remove('active'); }
-
   function startCheckout(tierKey) {
     if (!PAYSTACK_ENABLED) {
       localStorage.setItem('studypad_premium_expiry', Date.now() + (30 * 24 * 60 * 60 * 1000));
       localStorage.setItem('studypad_premium_tier', tierKey);
-      checkTrialStatus();
-      closePricing();
-      alert(`🧪 TEST MODE: ${tierKey.toUpperCase()} unlocked!`);
-      return;
+      checkTrialStatus(); closePricing(); alert(`🧪 TEST MODE: ${tierKey.toUpperCase()} unlocked!`);
     }
   }
 
@@ -1020,162 +996,84 @@
   if (devTrigger) {
     devTrigger.addEventListener('click', () => {
       devClicks++;
-      if (devClicks === 7) {
-        document.getElementById('devUnlockModal').classList.add('active');
-        devClicks = 0;
-      }
+      if (devClicks === 7) { document.getElementById('devUnlockModal').classList.add('active'); devClicks = 0; }
     });
   }
-
-  function closeDevModal() {
-    document.getElementById('devUnlockModal').classList.remove('active');
-    document.getElementById('devError').style.display = 'none';
-    document.getElementById('devCodeInput').value = '';
-  }
-
+  function closeDevModal() { document.getElementById('devUnlockModal').classList.remove('active'); document.getElementById('devError').style.display = 'none'; document.getElementById('devCodeInput').value = ''; }
   function verifyDevCode() {
-    const code = document.getElementById('devCodeInput').value;
-    if (code === 'STUDYCOMPANION2026') {
+    if (document.getElementById('devCodeInput').value === 'STUDYCOMPANION2026') {
       localStorage.setItem('studypad_premium_expiry', Date.now() + (365 * 24 * 60 * 60 * 1000));
       localStorage.setItem('studypad_premium_tier', 'ultimate');
-      checkTrialStatus();
-      closeDevModal();
-      alert('✅ Developer Unlocked! All features are now active.');
-    } else {
-      document.getElementById('devError').textContent = 'Invalid code.';
-      document.getElementById('devError').style.display = 'block';
-    }
+      checkTrialStatus(); closeDevModal(); alert('✅ Developer Unlocked!');
+    } else { document.getElementById('devError').textContent = 'Invalid code.'; document.getElementById('devError').style.display = 'block'; }
   }
 
-  // ==================== SEARCH BAR ====================
+  // ==================== SEARCH ====================
   function handleSearch(e) {
     if (e.key !== 'Enter') return;
-    const query = e.target.value.toLowerCase().trim();
-    if (!query) return;
-
-    const routes = {
-      'humanizer': 'humanizer', 'paraphrase': 'humanizer', 'write': 'humanizer',
-      'grammar': 'grammar', 'check': 'grammar',
-      'summar': 'summarizer', 'notes': 'summarizer',
-      'cite': 'citation', 'reference': 'citation',
-      'detect': 'documents', 'ai detector': 'documents', 'document': 'documents',
-      'quiz': 'quiz', 'test': 'quiz',
-      'flash': 'flashcards', 'card': 'flashcards',
-      'exam': 'examprep', 'prep': 'examprep',
-      'grade': 'gradepilot', 'pilot': 'gradepilot',
-      'tutor': 'tutor', 'teach': 'tutor', 'explain': 'tutor',
-      'count': 'counter', 'word': 'counter',
-      'research': 'research', 'performance': 'performance', 'progress': 'performance'
-    };
-
-    let targetPage = 'dashboard';
+    const q = e.target.value.toLowerCase().trim();
+    const routes = { 'humanizer': 'humanizer', 'paraphrase': 'humanizer', 'grammar': 'grammar', 'summar': 'summarizer', 'cite': 'citation', 'detect': 'documents', 'document': 'documents', 'quiz': 'quiz', 'flash': 'flashcards', 'exam': 'examprep', 'grade': 'gradepilot', 'tutor': 'tutor', 'count': 'counter', 'research': 'research', 'performance': 'performance' };
     for (const key in routes) {
-      if (query.includes(key)) {
-        targetPage = routes[key];
-        break;
-      }
+      if (q.includes(key)) { showPage(routes[key]); e.target.value = ''; return; }
     }
-
-    if (targetPage !== 'dashboard') {
-      showPage(targetPage);
-      e.target.value = '';
-    } else {
-      alert('Tool not found. Try searching for "humanizer", "quiz", "detector", or "tutor".');
-    }
+    alert('Tool not found.');
   }
 
-  // ==================== RESEARCH GUIDE ====================
-  const researchData = {
-    'research-1': { title: "1. What is Research?", content: "<p><strong>Definition:</strong> Research is a careful, systematic, and patient investigation in a field of knowledge.</p><br><p><strong>Purpose:</strong> Discover new knowledge, solve problems, and develop theories.</p><br><p><em>(You can add more content here later by editing the <code>researchData</code> object in the JavaScript.)</em></p>" },
-    'research-2': { title: "2. Formulating the Research Problem & Gap", content: "<p>A research problem is a specific issue or gap in existing knowledge that you aim to address.</p><br><p><strong>Where problems arise:</strong> Real-world issues, something not happening, or something misunderstood.</p>" },
-    'research-3': { title: "3. Research Aim, Objectives & Hypotheses", content: "<p><strong>Aim:</strong> A broad statement of purpose (1-3 sentences).</p><br><p><strong>Objectives:</strong> Specific, operational statements.</p><br><p><strong>Hypotheses:</strong> Testable propositions about relationships.</p>" },
-    'research-4': { title: "4. Theoretical vs. Conceptual Frameworks", content: "<p><strong>Theoretical Framework:</strong> Established theory providing a lens.</p><br><p><strong>Conceptual Framework:</strong> Study-specific map showing important concepts.</p>" },
-    'research-5': { title: "5. Methodology, Design & Data Collection", content: "<p><strong>Methodology:</strong> Overall logic (Quantitative, Qualitative, Mixed Methods).</p><br><p><strong>Design:</strong> Blueprint (Case Study, Survey, Ethnography).</p>" },
-    'research-6': { title: "6. Ethics, Schedule & Budget", content: "<p><strong>Ethics:</strong> Voluntary Informed Consent, protection from harm.</p><br><p><strong>Schedule:</strong> Gantt chart or timeline.</p>" },
-    'research-7': { title: "7. Writing the Research Proposal", content: "<p><strong>Components:</strong> Title, Summary, Background, Problem, Justification, Objectives, Hypothesis, Methodology.</p>" }
-  };
-
-  function openResearchPage(id) {
-    const data = researchData[id];
-    if (!data) return;
+  // ==================== HUMANIZER & AI SCORE ====================
+  async function checkAIScore(text, type) {
+    const box = document.getElementById(type + 'ScoreContainer');
+    const bar = document.getElementById(type + 'ScoreBar');
+    const label = document.getElementById(type + 'ScoreLabel');
+    if (!box) return;
+    box.classList.remove('hidden');
     
-    document.getElementById('page-research').classList.remove('active');
-    
-    let dynamicScreen = document.getElementById('page-research-dynamic');
-    if (!dynamicScreen) {
-      dynamicScreen = document.createElement('div');
-      dynamicScreen.id = 'page-research-dynamic';
-      dynamicScreen.className = 'page';
-      document.querySelector('.main-content').appendChild(dynamicScreen);
-    }
-    
-    dynamicScreen.innerHTML = `
-      <div class="back-link" onclick="closeResearchPage()" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-muted);margin-bottom:16px;font-weight:600;cursor:pointer;">
-        <i class="fas fa-arrow-left"></i> Back to Research Guide
-      </div>
-      <div class="tool-header" style="margin-bottom:24px;">
-        <h2 style="font-size:28px;font-weight:800;margin-bottom:6px;">${data.title}</h2>
-      </div>
-      <div class="card-panel" style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:32px; font-size: 16px; line-height: 1.8; color: var(--text-main); min-height: 400px;">
-        ${data.content}
-      </div>
-    `;
-    
-    dynamicScreen.classList.add('active');
-    window.scrollTo(0,0);
+    try {
+      const res = await fetch(AI_DETECT_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
+      const data = await res.json();
+      const score = data.score || 0;
+      const color = score > 60 ? 'var(--red)' : score > 20 ? 'var(--amber)' : 'var(--green)';
+      bar.style.width = score + '%'; bar.style.background = color;
+      label.textContent = score + '% AI-Written'; label.style.color = color;
+    } catch (e) { box.classList.add('hidden'); }
   }
 
-  function closeResearchPage() {
-    document.getElementById('page-research-dynamic').classList.remove('active');
-    showPage('research');
-  }
-
-  // ==================== HUMANIZER ====================
   async function runHumanizer() {
     const input = document.getElementById('hInput').value.trim();
     const outputBox = document.getElementById('hOutput');
     const errorMsg = document.getElementById('hError');
     const btn = document.getElementById('hRunBtn');
 
-    if (!input) {
-      errorMsg.textContent = 'Please paste your text first.';
-      errorMsg.style.display = 'block';
-      return;
-    }
+    if (!input) { errorMsg.textContent = 'Please paste your text first.'; errorMsg.style.display = 'block'; return; }
 
-    btn.disabled = true;
-    btn.innerHTML = '⏳ Processing...';
-    outputBox.innerHTML = '<p class="output-empty" style="color:var(--text-light);font-style:italic;">Thinking...</p>';
+    btn.disabled = true; btn.innerHTML = '⏳ Processing...';
+    outputBox.innerHTML = '<p class="output-empty">Thinking...</p>';
     errorMsg.style.display = 'none';
-    document.getElementById('hHumanizedBanner').classList.add('hidden');
+    document.getElementById('outputScoreContainer').classList.add('hidden');
 
     try {
-      const res = await fetch(WORKER_URL, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'humanize', text: input })
-      });
+      const res = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'humanize', text: input }) });
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error || 'Worker error');
-      
       const result = data.result || data.answer || '';
-      if (!result) throw new Error('Empty AI response');
-
+      
       outputBox.textContent = result;
+      // Auto-score the output
+      checkAIScore(result, 'output');
+      
     } catch (e) {
-      errorMsg.textContent = 'Error: ' + e.message;
-      errorMsg.style.display = 'block';
+      errorMsg.textContent = 'Error: ' + e.message; errorMsg.style.display = 'block';
       outputBox.innerHTML = '<p class="output-empty">Something went wrong.</p>';
     } finally {
-      btn.disabled = false;
-      btn.textContent = '✨ Humanize Text';
+      btn.disabled = false; btn.textContent = '✨ Humanize Text';
     }
   }
 
   function clearHumanizer() {
     document.getElementById('hInput').value = '';
-    document.getElementById('hOutput').innerHTML = '<p class="output-empty" style="color:var(--text-light);font-style:italic;">Your improved text will appear here.</p>';
+    document.getElementById('hOutput').innerHTML = '<p class="output-empty">Your improved text will appear here.</p>';
     document.getElementById('hWordCount').textContent = '0';
-    document.getElementById('hHumanizedBanner').classList.add('hidden');
+    document.getElementById('inputScoreContainer').classList.add('hidden');
+    document.getElementById('outputScoreContainer').classList.add('hidden');
     document.getElementById('hError').style.display = 'none';
   }
 
@@ -1189,910 +1087,173 @@
     const text = document.getElementById('hOutput').textContent.trim();
     if (!text) return;
     const blob = new Blob([text], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'studypad.txt'; a.click();
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'studypad.txt'; a.click();
   }
 
-  // ==================== AI DETECTOR (Document Centre) ====================
+  // ==================== QUIZ & FLASHCARDS ====================
+  let qzDocText = '';
+  let fcDocText = '';
+
+  async function handleQuizFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    qzDocText = await readDoc(file);
+    document.getElementById('qzIn').value = `[File uploaded: ${file.name}]`;
+  }
+
+  document.getElementById('qzBtn').onclick = async () => {
+    const topic = document.getElementById('qzIn').value.trim() || qzDocText;
+    if (!topic) { alert('Please upload a document or type a topic.'); return; }
+    const btn = document.getElementById('qzBtn'); const out = document.getElementById('qzWrap');
+    btn.disabled = true; btn.textContent = '⏳ Generating...'; out.innerHTML = '<p class="output-empty">Thinking...</p>';
+    try {
+      const res = await callWorker('quiz', topic);
+      out.innerHTML = `<div style="white-space: pre-wrap;">${res}</div>`;
+    } catch (e) { out.innerHTML = 'Error generating quiz.'; } finally { btn.disabled = false; btn.textContent = 'Start Quiz'; }
+  };
+
+  async function handleFcFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    fcDocText = await readDoc(file);
+    document.getElementById('fcIn').value = `[File uploaded: ${file.name}]`;
+  }
+
+  document.getElementById('fcBtn').onclick = async () => {
+    const topic = document.getElementById('fcIn').value.trim() || fcDocText;
+    if (!topic) { alert('Please upload a document or type a topic.'); return; }
+    const btn = document.getElementById('fcBtn'); const card = document.getElementById('fcCard');
+    btn.disabled = true; btn.textContent = '⏳ Generating...';
+    try {
+      const res = await callWorker('flashcards', topic);
+      card.style.display = 'block';
+      document.getElementById('fcSide').textContent = 'Generated';
+      document.getElementById('fcText').textContent = res;
+    } catch (e) { alert('Error generating flashcards.'); } finally { btn.disabled = false; btn.textContent = 'Generate Flashcards'; }
+  };
+
+  // ==================== AI DETECTOR ====================
   function switchDocTab(tab) {
     document.querySelectorAll('.doc-tab').forEach(b => b.classList.remove('active'));
     event.target.classList.add('active');
-    if (tab === 'student') {
-      document.getElementById('docStudentTab').classList.remove('hidden');
-      document.getElementById('docLecturerTab').classList.add('hidden');
-    } else {
-      document.getElementById('docStudentTab').classList.add('hidden');
-      document.getElementById('docLecturerTab').classList.remove('hidden');
-    }
+    if (tab === 'student') { document.getElementById('docStudentTab').classList.remove('hidden'); document.getElementById('docLecturerTab').classList.add('hidden'); }
+    else { document.getElementById('docStudentTab').classList.add('hidden'); document.getElementById('docLecturerTab').classList.remove('hidden'); }
   }
 
   async function handleStudentUpload(input) {
-    const file = input.files[0];
-    if (!file) return;
+    const file = input.files[0]; if (!file) return;
     currentDocName = file.name;
     document.getElementById('studentUploadStatus').textContent = 'Reading file...';
     try {
       currentDocText = await readDoc(file);
       document.getElementById('studentUploadStatus').textContent = `✅ ${file.name} loaded (${currentDocText.split(/\s+/).length} words)`;
-    } catch (e) {
-      document.getElementById('studentUploadStatus').textContent = '❌ Error reading file';
-    }
+    } catch (e) { document.getElementById('studentUploadStatus').textContent = '❌ Error reading file'; }
   }
 
   async function runStudentDetector() {
     if (!currentDocText) { alert('Please upload a document first.'); return; }
-    const box = document.getElementById('studentResultBox');
-    const btn = document.getElementById('scanDocBtn');
-    box.innerHTML = '<p class="output-empty">Scanning document...</p>';
-    btn.disabled = true;
-    
+    const box = document.getElementById('studentResultBox'); const btn = document.getElementById('scanDocBtn');
+    box.innerHTML = '<p class="output-empty">Scanning document...</p>'; btn.disabled = true;
     try {
-      const res = await fetch(AI_DETECT_API, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: currentDocText }) 
-      });
+      const res = await fetch(AI_DETECT_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: currentDocText }) });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      
       currentDocScore = data.score;
       const color = data.score > 60 ? 'var(--red)' : data.score > 20 ? 'var(--amber)' : 'var(--green)';
-      
-      box.innerHTML = `
-        <div style="font-size: 32px; font-weight: 800; color: ${color}; margin-bottom: 8px;">${data.score}% AI</div>
-        <div style="height: 8px; background: var(--border); border-radius: 999px; margin-bottom: 16px;">
-          <div style="width: ${data.score}%; height: 100%; background: ${color}; border-radius: 999px;"></div>
-        </div>
-        <div style="font-size: 13px; line-height: 1.6; max-height: 200px; overflow-y: auto;">
-          ${data.sentences ? data.sentences.map(s => s.score > 50 ? `<mark class="ai" title="${s.score}% AI">${s.text}</mark>` : s.text).join(' ') : 'Analysis complete.'}
-        </div>
-      `;
+      box.innerHTML = `<div style="font-size: 32px; font-weight: 800; color: ${color}; margin-bottom: 8px;">${data.score}% AI</div><div style="font-size: 13px; line-height: 1.6; max-height: 200px; overflow-y: auto;">${data.sentences ? data.sentences.map(s => s.score > 50 ? `<mark class="ai" title="${s.score}% AI">${s.text}</mark>` : s.text).join(' ') : 'Analysis complete.'}</div>`;
       document.getElementById('downloadReportBtn').classList.remove('hidden');
-    } catch (e) {
-      box.innerHTML = `<p style="color: var(--red);">Error: ${e.message}. Ensure the document is text-based.</p>`;
-    } finally {
-      btn.disabled = false;
-    }
+    } catch (e) { box.innerHTML = `<p style="color: var(--red);">Error: ${e.message}</p>`; } finally { btn.disabled = false; }
   }
 
   async function handleLecturerUpload(input) {
-    const files = input.files;
-    if (!files.length) return;
-    const list = document.getElementById('lecturerDocList');
-    list.innerHTML = '';
-    
+    const files = input.files; if (!files.length) return;
+    const list = document.getElementById('lecturerDocList'); list.innerHTML = '';
     for (let file of files) {
-      const div = document.createElement('div');
-      div.className = 'doc-item';
+      const div = document.createElement('div'); div.className = 'doc-item';
       div.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:16px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;background:#fff;flex-wrap:wrap;gap:12px;';
-      
-      div.innerHTML = `
-        <div style="display:flex;align-items:center;gap:12px;">
-          <i class="fas fa-file-pdf" style="color:var(--primary);font-size:20px;"></i>
-          <div>
-            <h4 style="font-size:14px;font-weight:700;">${file.name}</h4>
-            <p style="font-size:12px;color:var(--text-muted);">Scanning cover page...</p>
-          </div>
-        </div>
-        <div style="font-weight:800;font-size:14px;color:var(--text-muted);">...</div>`;
+      div.innerHTML = `<div style="display:flex;align-items:center;gap:12px;"><i class="fas fa-file-pdf" style="color:var(--primary);font-size:20px;"></i><div><h4 style="font-size:14px;font-weight:700;">${file.name}</h4><p style="font-size:12px;color:var(--text-muted);">Scanning...</p></div></div><div style="font-weight:800;font-size:14px;color:var(--text-muted);">...</div>`;
       list.appendChild(div);
-      
       try {
         const fullText = await readDoc(file);
-        const coverPageText = fullText.substring(0, 1000); 
-
-        const nameRegex = /(?:name|surname|last name)\s*[:\-]?\s*([A-Za-z\s\-']{2,60})(?=\n|\r|,|$)/gi;
-        let names = [];
-        let match;
-        while ((match = nameRegex.exec(coverPageText)) !== null) {
-          names.push(match[1].trim());
-        }
-        const studentName = names.length > 0 ? names.join(' ') : 'Unknown Name';
-
-        const idRegex = /(?:student\s*(?:id|number|no\.?|#)|stud\.?\s*no\.?)\s*[:\-]?\s*([A-Z0-9\-]{5,20})/gi;
-        const idMatch = coverPageText.match(idRegex);
-        const studentId = idMatch ? idMatch[1] : 'Unknown ID';
-        
-        const res = await fetch(AI_DETECT_API, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: fullText })
-        });
+        const cover = fullText.substring(0, 1000); 
+        const nameMatch = cover.match(/(?:name|surname)\s*[:\-]?\s*([A-Za-z\s\-']{2,60})(?=\n|\r|,|$)/i);
+        const idMatch = cover.match(/(?:student\s*(?:id|no|number)|stud\.?\s*no\.?)\s*[:\-]?\s*([A-Z0-9\-]{5,20})/i);
+        const res = await fetch(AI_DETECT_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: fullText }) });
         const data = await res.json();
-        const score = data.score || 0;
-        const color = score > 60 ? 'var(--red)' : score > 20 ? 'var(--amber)' : 'var(--green)';
-        
-        div.innerHTML = `
-          <div style="display:flex;align-items:center;gap:12px; flex: 1; min-width: 200px;">
-            <i class="fas fa-file-pdf" style="color:var(--primary);font-size:20px;"></i>
-            <div>
-              <h4 style="font-size:14px;font-weight:700;">${file.name}</h4>
-              <p style="font-size:12px;color:var(--text-muted);">
-                👤 <strong>${studentName}</strong> <br>
-                🎓 <strong>${studentId}</strong>
-              </p>
-            </div>
-          </div>
-          <div style="font-weight:800;font-size:14px;color:${color}; white-space:nowrap;">
-            ${score}% AI
-          </div>
-        `;
-        
-      } catch (e) {
-        div.querySelector('p').textContent = 'Error reading file or detecting AI';
-        div.querySelector('div:last-child').innerHTML = `<span style="color:var(--red);">Failed</span>`;
-      }
+        const score = data.score || 0; const color = score > 60 ? 'var(--red)' : score > 20 ? 'var(--amber)' : 'var(--green)';
+        div.innerHTML = `<div style="display:flex;align-items:center;gap:12px; flex: 1; min-width: 200px;"><i class="fas fa-file-pdf" style="color:var(--primary);font-size:20px;"></i><div><h4 style="font-size:14px;font-weight:700;">${file.name}</h4><p style="font-size:12px;color:var(--text-muted);">👤 <strong>${nameMatch ? nameMatch[1].trim() : 'Unknown'}</strong> <br> 🎓 <strong>${idMatch ? idMatch[1] : 'Unknown'}</strong></p></div></div><div style="font-weight:800;font-size:14px;color:${color}; white-space:nowrap;">${score}% AI</div>`;
+      } catch (e) { div.querySelector('p').textContent = 'Error'; }
     }
   }
 
-  // ==================== PDF REPORT GENERATOR ====================
+  // ==================== PDF REPORT ====================
   function downloadProfessionalReport() {
     if (currentDocScore === null) return;
     const name = document.getElementById('docStudentName').value || 'Student Name';
     const module = document.getElementById('docModuleCode').value || 'Module Code';
-    
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-ZA', { year: 'numeric', month: 'long', day: 'numeric' });
     const timeStr = now.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' });
-
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    
-    doc.setFillColor(37, 99, 235);
-    doc.rect(0, 0, 210, 40, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(22);
-    doc.setFont('helvetica', 'bold');
-    doc.text('StudyPad AI Study Companion', 20, 20);
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
-    doc.text('AI Detection Report', 20, 30);
-    
-    doc.setTextColor(15, 23, 42);
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Student Details', 20, 60);
-    
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Full Name: ${name}`, 20, 70);
-    doc.text(`Module Code: ${module}`, 20, 78);
-    doc.text(`Date Analyzed: ${dateStr} at ${timeStr}`, 20, 86);
-    doc.text(`File Name: ${currentDocName}`, 20, 94);
-    doc.text(`Tool Used: AI Detector (Sapling API)`, 20, 102);
-    
-    doc.setDrawColor(226, 232, 240);
-    doc.setFillColor(248, 250, 252);
-    doc.roundedRect(20, 115, 170, 45, 5, 5, 'FD');
-    
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(15, 23, 42);
-    doc.text('AI Similarity Score:', 30, 132);
-    
-    const scoreColor = currentDocScore > 60 ? [239, 68, 68] : currentDocScore > 20 ? [245, 158, 11] : [34, 197, 94];
-    doc.setTextColor(scoreColor[0], scoreColor[1], scoreColor[2]);
-    doc.setFontSize(32);
-    doc.text(`${currentDocScore}%`, 30, 150);
-    
-    doc.setTextColor(100, 116, 139);
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'italic');
-    doc.text('Disclaimer: AI detection is probabilistic. Use this report as guidance, not proof.', 20, 180);
-    doc.text('Report generated securely by StudyPad AI Study Companion.', 20, 186);
-    
-    doc.save(`StudyPad_Report_${module || 'Document'}_${name.split(' ')[0]}.pdf`);
+    const { jsPDF } = window.jspdf; const doc = new jsPDF();
+    doc.setFillColor(37, 99, 235); doc.rect(0, 0, 210, 40, 'F');
+    doc.setTextColor(255, 255, 255); doc.setFontSize(22); doc.setFont('helvetica', 'bold');
+    doc.text('StudyPad AI Study Companion', 20, 20); doc.setFontSize(12); doc.setFont('helvetica', 'normal'); doc.text('AI Detection Report', 20, 30);
+    doc.setTextColor(15, 23, 42); doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.text('Student Details', 20, 60);
+    doc.setFontSize(11); doc.setFont('helvetica', 'normal');
+    doc.text(`Full Name: ${name}`, 20, 70); doc.text(`Module Code: ${module}`, 20, 78); doc.text(`Date Analyzed: ${dateStr} at ${timeStr}`, 20, 86); doc.text(`File Name: ${currentDocName}`, 20, 94); doc.text(`Tool Used: AI Detector`, 20, 102);
+    doc.setDrawColor(226, 232, 240); doc.setFillColor(248, 250, 252); doc.roundedRect(20, 115, 170, 45, 5, 5, 'FD');
+    doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(15, 23, 42); doc.text('AI Similarity Score:', 30, 132);
+    const sColor = currentDocScore > 60 ? [239, 68, 68] : currentDocScore > 20 ? [245, 158, 11] : [34, 197, 94];
+    doc.setTextColor(sColor[0], sColor[1], sColor[2]); doc.setFontSize(32); doc.text(`${currentDocScore}%`, 30, 150);
+    doc.setTextColor(100, 116, 139); doc.setFontSize(9); doc.setFont('helvetica', 'italic');
+    doc.text('Disclaimer: AI detection is probabilistic.', 20, 180); doc.text('Report generated by StudyPad AI.', 20, 186);
+    doc.save(`StudyPad_Report_${module}_${name.split(' ')[0]}.pdf`);
   }
 
   // ==================== AI TUTOR ====================
   async function handleTutorUpload(input) {
-    const file = input.files[0];
-    if (!file) return;
-    const pagesList = document.getElementById('tutorPagesList');
-    pagesList.innerHTML = '<p style="font-size:12px;color:var(--text-light);text-align:center;">Splitting pages...</p>';
-    
+    const file = input.files[0]; if (!file) return;
+    const pagesList = document.getElementById('tutorPagesList'); pagesList.innerHTML = 'Splitting pages...';
     try {
-      const fullText = await readDoc(file);
-      const chunks = [];
-      let current = '';
-      const words = fullText.split(' ');
-      for (let word of words) {
-        if ((current + word).length > 600) {
-          chunks.push(current);
-          current = word + ' ';
-        } else {
-          current += word + ' ';
-        }
-      }
+      const fullText = await readDoc(file); const chunks = []; let current = ''; const words = fullText.split(' ');
+      for (let word of words) { if ((current + word).length > 600) { chunks.push(current); current = word + ' '; } else current += word + ' '; }
       if (current) chunks.push(current);
-      
-      tutorPages = chunks;
-      pagesList.innerHTML = '';
-      
+      tutorPages = chunks; pagesList.innerHTML = '';
       chunks.forEach((text, index) => {
-        const div = document.createElement('div');
-        div.className = 'page-thumb';
+        const div = document.createElement('div'); div.className = 'page-thumb';
         div.innerHTML = `<i class="fas fa-file-alt" style="color:var(--primary);"></i> Page ${index + 1}`;
-        div.onclick = () => explainPage(index, div);
-        pagesList.appendChild(div);
+        div.onclick = () => explainPage(index, div); pagesList.appendChild(div);
       });
-    } catch (e) {
-      pagesList.innerHTML = '<p style="font-size:12px;color:var(--red);text-align:center;">Error reading file.</p>';
-    }
+    } catch (e) { pagesList.innerHTML = 'Error reading file.'; }
   }
 
   async function explainPage(index, el) {
-    document.querySelectorAll('.page-thumb').forEach(p => p.classList.remove('active'));
-    el.classList.add('active');
-    const text = tutorPages[index];
-    const whiteboard = document.getElementById('tutorWhiteboard');
-    
-    speechSession++;
-    unlockSpeech();
-    
-    whiteboard.innerHTML = `
-      <div style="text-align: center; color: var(--text-muted); width: 100%; margin-top: 100px;">
-        <i class="fas fa-spinner fa-spin" style="font-size: 32px; margin-bottom: 16px; color: var(--primary);"></i>
-        <h3>AI Tutor is preparing the lesson...</h3>
-      </div>
-    `;
-
+    document.querySelectorAll('.page-thumb').forEach(p => p.classList.remove('active')); el.classList.add('active');
+    const text = tutorPages[index]; const whiteboard = document.getElementById('tutorWhiteboard');
+    speechSession++; unlockSpeech();
+    whiteboard.innerHTML = `<div style="text-align: center; margin-top: 100px;"><i class="fas fa-spinner fa-spin" style="font-size: 32px; color: var(--primary);"></i><h3>Preparing...</h3></div>`;
     try {
-      const res = await fetch(TUTOR_WORKER_URL, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          action: 'tutor', 
-          text: text,
-          system: `You are a highly engaging, real-person tutor teaching a student. Explain the provided text in the simplest, most intuitive way possible. 
-          
-          CRITICAL INSTRUCTIONS:
-          1. Use real-world analogies.
-          2. Provide a practical, relatable example for every major point.
-          3. Structure your response for a whiteboard: short headings, bullet points.
-          4. Write exactly as you would speak. No markdown.
-          5. Keep it concise (150–250 words).`
-        })
-      });
-
-      const rawResponse = await res.text();
-      if (!res.ok) {
-        let errorDetail = rawResponse;
-        try { const parsed = JSON.parse(rawResponse); errorDetail = parsed.error || rawResponse; } catch(e) {}
-        throw new Error(`Worker Error (${res.status}): ${errorDetail}`);
-      }
-
-      const data = JSON.parse(rawResponse);
-      const explanation = data.result || data.answer || data.text;
-
-      if (!explanation) throw new Error(`Worker returned success but no text.`);
-      
-      renderWhiteboardTypewriter(explanation);
-      
-    } catch (e) {
-      whiteboard.innerHTML = `
-        <div style="color:var(--red); padding: 20px; width: 100%;">
-          <h3 style="margin-bottom: 8px;"><i class="fas fa-exclamation-triangle"></i> Worker Error Details</h3>
-          <p style="font-size: 14px; line-height: 1.6; font-family: monospace; background: #fef2f2; padding: 16px; border-radius: 8px; word-break: break-all; border: 1px solid #fca5a5;">
-            ${e.message}
-          </p>
-        </div>
-      `;
-    }
+      const res = await fetch(TUTOR_WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'tutor', text, system: `Explain simply with real-world analogies. No markdown.` }) });
+      const raw = await res.text(); if (!res.ok) throw new Error(raw);
+      const data = JSON.parse(raw); const expl = data.result || data.answer || data.text;
+      if (!expl) throw new Error('Empty response'); renderWhiteboardTypewriter(expl);
+    } catch (e) { whiteboard.innerHTML = `<p style="color:red">${e.message}</p>`; }
   }
 
-  function unlockSpeech() {
-    if (!('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(' ');
-    u.volume = 0;
-    window.speechSynthesis.speak(u);
-  }
-
-  function splitForSpeech(text, max = 180) {
-    const clean = text.replace(/[•*#`]/g, ' ').replace(/\s+/g, ' ').trim();
-    const sentences = clean.match(/[^.!?:;]+[.!?:;]*\s*/g) || [clean];
-    const chunks = [];
-    let cur = '';
-    for (const s of sentences) {
-      if ((cur + s).length > max && cur) { chunks.push(cur.trim()); cur = s; }
-      else cur += s;
-    }
-    if (cur.trim()) chunks.push(cur.trim());
-    return chunks;
-  }
-
-  function pickVoice() {
-    const voices = window.speechSynthesis.getVoices();
-    const en = voices.filter(v => /^en/i.test(v.lang));
-    const lang = v => v.lang.replace('_', '-');
-    return en.find(v => /Natural/i.test(v.name) && lang(v) === 'en-ZA')
-        || en.find(v => /Natural/i.test(v.name))
-        || en.find(v => lang(v) === 'en-ZA' && v.localService)
-        || en.find(v => /Microsoft/i.test(v.name) && v.localService)
-        || en.find(v => v.localService)
-        || en[0] || voices[0] || null;
-  }
+  function unlockSpeech() { if (!('speechSynthesis' in window)) return; window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(' '); u.volume = 0; window.speechSynthesis.speak(u); }
 
   function renderWhiteboardTypewriter(fullText) {
-    const whiteboard = document.getElementById('tutorWhiteboard');
-    const session = ++speechSession;
-
-    whiteboard.innerHTML = `
-      <div class="whiteboard-content" id="wbTextContainer" style="width: 100%; max-width: 800px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-          <h3 style="margin: 0; color: var(--primary);">Lesson Explanation</h3>
-          <button id="voiceToggleBtn" class="btn-secondary" style="padding: 6px 12px; font-size: 12px; display: flex; align-items: center; gap: 6px;">
-            <i class="fas fa-volume-up"></i> Voice Active
-          </button>
-        </div>
-        <div id="typedText" class="cursor-blink" style="white-space: pre-wrap; line-height: 1.8; font-size: 16px; color: var(--text-main);"></div>
-      </div>
-    `;
-
-    const textEl = document.getElementById('typedText');
-    const voiceBtn = document.getElementById('voiceToggleBtn');
-    const synth = window.speechSynthesis;
-
-    if (!('speechSynthesis' in window)) {
-      voiceBtn.style.display = 'none';
-    } else {
-      const chunks = splitForSpeech(fullText);
-      let idx = 0;
-      let paused = false;
-      let started = false;
-
-      const setBtn = (icon, label, color) => {
-        voiceBtn.innerHTML = `<i class="fas ${icon}"></i> ${label}`;
-        voiceBtn.style.color = color;
-      };
-
-      function speakFrom(i) {
-        if (session !== speechSession) return;
-        if (i >= chunks.length) { voiceBtn.style.display = 'none'; return; }
-        idx = i;
-
-        const tok = ++utterToken;
-        const u = new SpeechSynthesisUtterance(chunks[i]);
-        const v = pickVoice();
-        if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = 'en-US'; }
-        u.rate = 1.0;
-        u.pitch = 1.0;
-
-        u.onend = () => {
-          if (tok !== utterToken || session !== speechSession || paused) return;
-          speakFrom(i + 1);
-        };
-        u.onerror = (e) => {
-          if (tok !== utterToken || session !== speechSession) return;
-          if (e.error === 'canceled' || e.error === 'interrupted') return;
-          if (e.error === 'not-allowed') {
-            paused = true;
-            setBtn('fa-volume-mute', 'Tap to enable voice', 'var(--primary)');
-            return;
-          }
-          speakFrom(i + 1);
-        };
-
-        window.__currentUtterance = u;
-        synth.speak(u);
-      }
-
-      function start() {
-        if (started) return;
-        started = true;
-        synth.cancel();
-        setTimeout(() => speakFrom(0), 150);
-      }
-
-      if (synth.getVoices().length) {
-        start();
-      } else {
-        synth.onvoiceschanged = () => { synth.onvoiceschanged = null; start(); };
-        setTimeout(start, 1000);
-      }
-
-      voiceBtn.onclick = () => {
-        if (!paused) {
-          paused = true;
-          utterToken++;
-          synth.cancel();
-          setBtn('fa-volume-mute', 'Voice Paused', 'var(--primary)');
-        } else {
-          paused = false;
-          utterToken++;
-          synth.cancel();
-          setBtn('fa-volume-up', 'Voice Active', 'var(--text-main)');
-          setTimeout(() => speakFrom(idx), 100);
-        }
-      };
+    const whiteboard = document.getElementById('tutorWhiteboard'); const session = ++speechSession;
+    whiteboard.innerHTML = `<div class="whiteboard-content" style="width: 100%;"><div style="display:flex;justify-content:space-between;margin-bottom:20px;"><h3 style="color:var(--primary);">Lesson</h3><button id="voiceToggleBtn" class="btn-secondary">Voice Active</button></div><div id="typedText" style="white-space: pre-wrap; line-height: 1.8;"></div></div>`;
+    const textEl = document.getElementById('typedText'); const voiceBtn = document.getElementById('voiceToggleBtn'); const synth = window.speechSynthesis;
+    const chunks = splitForSpeech(fullText); let idx = 0; let paused = false;
+    function speakFrom(i) {
+      if (session !== speechSession || i >= chunks.length) { voiceBtn.style.display = 'none'; return; }
+      idx = i; const u = new SpeechSynthesisUtterance(chunks[i]); u.rate = 1.0;
+      u.onend = () => { if (session === speechSession && !paused) speakFrom(i + 1); };
+      synth.speak(u);
     }
-
-    let i = 0;
-    const words = fullText.split(' ');
-
-    function typeWord() {
-      if (session !== speechSession) return;
-      if (i < words.length) {
-        textEl.textContent += words[i] + ' ';
-        i++;
-        whiteboard.scrollTop = whiteboard.scrollHeight;
-        setTimeout(typeWord, 120 + (words[i - 1].length * 15));
-      } else {
-        textEl.classList.remove('cursor-blink');
-      }
-    }
-    setTimeout(typeWord, 600);
-  }
-
-  // ==================== EXISTING TOOLS ====================
-  async function callWorker(action, text, system) {
-    const res = await fetch(WORKER_URL, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action, text, system: system || undefined })
-    });
-    const d = await res.json();
-    if (!res.ok || d.error) throw new Error(d.error || 'Worker error');
-    return d.result || d.answer || '';
-  }
-
-  // Grammar
-  document.getElementById('grammarBtn').onclick = async () => {
-    const t = document.getElementById('grammarIn').value.trim();
-    const out = document.getElementById('grammarOut');
-    if (!t) { out.innerHTML = 'Please paste text.'; return; }
-    out.innerHTML = 'Checking...';
-    try { out.textContent = await callWorker('grammar', t); } catch (e) { out.innerHTML = 'Error'; }
-  };
-
-  // Summarizer
-  document.getElementById('sumBtn').onclick = async () => {
-    const t = document.getElementById('sumIn').value.trim();
-    const out = document.getElementById('sumOut');
-    if (!t) { out.innerHTML = 'Please paste text.'; return; }
-    out.innerHTML = 'Summarizing...';
-    try { out.textContent = await callWorker('summarizer', t); } catch (e) { out.innerHTML = 'Error'; }
-  };
-
-  // Word Counter
-  document.getElementById('wcIn').addEventListener('input', () => {
-    const t = document.getElementById('wcIn').value;
-    document.getElementById('wcW').textContent = (t.match(/\S+/g) || []).length;
-    document.getElementById('wcC').textContent = t.length;
-    document.getElementById('wcS').textContent = (t.match(/[^.!?]+[.!?]+/g) || []).length;
-  });
-
-  // Citation
-  document.getElementById('citeBtn').onclick = async () => {
-    const t = document.getElementById('citeIn').value.trim();
-    const out = document.getElementById('citeOut');
-    if (!t) return;
-    out.innerHTML = 'Generating...';
-    try { out.textContent = await callWorker('citation', t); } catch (e) { out.innerHTML = 'Error'; }
-  };
-
-    // Quiz
-  document.getElementById('qzBtn').onclick = async () => {
-    const t = document.getElementById('qzIn').value.trim();
-    const out = document.getElementById('qzWrap');
-    const btn = document.getElementById('qzBtn');
-    if (!t) { alert('Please enter a topic first.'); return; }
-    btn.disabled = true; btn.textContent = 'Generating...';
-    out.innerHTML = '<p class="output-empty">Thinking...</p>';
-    try {
-      const res = await callWorker('quiz', t);
-      out.innerHTML = `<div style="white-space: pre-wrap;">${res}</div>`;
-    } catch (e) { out.innerHTML = 'Error generating quiz.'; }
-    finally { btn.disabled = false; btn.textContent = 'Start Quiz'; }
-  };
-
-  // Flashcards
-  document.getElementById('fcBtn').onclick = async () => {
-    const t = document.getElementById('fcIn').value.trim();
-    const card = document.getElementById('fcCard');
-    const btn = document.getElementById('fcBtn');
-    if (!t) { alert('Please enter a topic first.'); return; }
-    btn.disabled = true; btn.textContent = 'Generating...';
-    try {
-      const res = await callWorker('flashcards', t);
-      card.style.display = 'block';
-      document.getElementById('fcSide').textContent = 'Generated';
-      document.getElementById('fcText').textContent = res;
-    } catch (e) { alert('Error generating flashcards.'); }
-    finally { btn.disabled = false; btn.textContent = 'Generate Flashcards'; }
-  };
-
-  // GradePilot
-  document.getElementById('gpBtn').onclick = async () => {
-    const g = document.getElementById('gpGuide').files[0];
-    const w = document.getElementById('gpWork').files[0];
-    const out = document.getElementById('gpOut');
-    const btn = document.getElementById('gpBtn');
-    if (!g || !w) { alert('Please upload both files.'); return; }
-    btn.disabled = true; out.innerHTML = 'Reading files...';
-    try {
-      const gt = await readDoc(g);
-      const wt = await readDoc(w);
-      const res = await callWorker('gradepilot', `GUIDE:\n${gt}\n\nWORK:\n${wt}`);
-      out.textContent = res;
-    } catch(e) { out.innerHTML = 'Error grading.'; }
-    finally { btn.disabled = false; }
-  };
-
-  // ==================== HELPERS ====================
-  async function readDoc(file) {
-    const name = file.name.toLowerCase();
-    if (name.endsWith('.docx')) {
-      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js');
-      return (await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() })).value;
-    }
-    if (name.endsWith('.pdf')) {
-      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-      const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
-      let out = '';
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const c = await (await pdf.getPage(i)).getTextContent();
-        out += c.items.map(x => x.str).join(' ') + '\n';
-      }
-      return out;
-    }
-    throw new Error('Unsupported file');
-  }
-
-  function loadScript(src) {
-    return new Promise((ok, no) => {
-      if (document.querySelector(`script[src="${src}"]`)) return ok();
-      const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s);
-    });
-  }
-
-  // ==================== EXAM PREP PLANNER & TIMER ====================
-  let examModules = [];
-  let moduleCounter = 0;
-  let timerInterval = null;
-  let currentTimerSeconds = 25 * 60;
-  let timerRunning = false;
-
-  function addModuleInput() {
-    if (examModules.length >= 10) {
-      alert("You can only add a maximum of 10 modules.");
-      return;
-    }
-    moduleCounter++;
-    const id = 'mod_' + moduleCounter;
-    
-    examModules.push({ id, name: '', date: '', materials: [] });
-    
-    const container = document.getElementById('modulesContainer');
-    const div = document.createElement('div');
-    div.id = id;
-    div.style.cssText = "border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; background: var(--bg-main);";
-    
-    div.innerHTML = `
-      <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-        <strong style="font-size: 14px;">Module ${examModules.length}</strong>
-        <button style="color: var(--red); background: none; border: none; cursor: pointer;" onclick="removeModule('${id}')"><i class="fas fa-trash"></i></button>
-      </div>
-      
-      <div class="form-group">
-        <input type="text" class="form-control" placeholder="Subject / Module Name" oninput="updateModuleData('${id}', 'name', this.value)">
-      </div>
-      
-      <div class="form-group">
-        <label style="font-size: 11px;">Exam Date & Time</label>
-        <input type="datetime-local" class="form-control" onchange="updateModuleData('${id}', 'date', this.value)">
-      </div>
-
-      <div style="background: #fff; padding: 12px; border-radius: 6px; border: 1px solid var(--border);">
-        <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 8px;">Study Materials (Max 15)</label>
-        <div id="fileList_${id}" style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">No documents uploaded.</div>
-        <input type="file" id="fileInput_${id}" multiple accept=".pdf,.docx" style="display: none;" onchange="handleModuleFiles('${id}', this)">
-        <button class="btn-secondary" style="width: 100%; font-size: 11px; padding: 6px;" onclick="document.getElementById('fileInput_${id}').click()">
-          <i class="fas fa-upload"></i> Upload Docs
-        </button>
-      </div>
-    `;
-    
-    container.appendChild(div);
-    
-    if (examModules.length >= 10) {
-      document.getElementById('addModuleBtn').style.display = 'none';
-    }
-  }
-
-  function removeModule(id) {
-    examModules = examModules.filter(m => m.id !== id);
-    document.getElementById(id).remove();
-    if (examModules.length < 10) {
-      document.getElementById('addModuleBtn').style.display = 'block';
-    }
-  }
-
-  function updateModuleData(id, key, value) {
-    const mod = examModules.find(m => m.id === id);
-    if (mod) mod[key] = value;
-  }
-
-  async function handleModuleFiles(id, input) {
-    const files = Array.from(input.files);
-    const mod = examModules.find(m => m.id === id);
-    if (!mod) return;
-
-    if (mod.materials.length + files.length > 15) {
-      alert('You can only upload a maximum of 15 documents per module.');
-      return;
-    }
-
-    const listEl = document.getElementById(`fileList_${id}`);
-    listEl.innerHTML = 'Reading files & counting pages...';
-
-    for (let file of files) {
-      try {
-        const text = await readDoc(file);
-        const pages = Math.max(1, Math.ceil(text.length / 3000));
-        mod.materials.push({ name: file.name, pages: pages });
-      } catch (e) {
-        console.error("Error reading file", file.name, e);
-      }
-    }
-    
-    listEl.innerHTML = mod.materials.map((m, i) => 
-      `<div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-        <span>${i+1}. ${m.name}</span>
-        <span style="font-weight: bold; color: var(--primary);">${m.pages} pgs</span>
-      </div>`
-    ).join('');
-    
-    input.value = '';
-  }
-
-  document.getElementById('generatePlanBtn').onclick = () => {
-    const validModules = examModules.filter(m => m.name && m.date && m.materials.length > 0);
-    if (validModules.length === 0) {
-      alert('Please fill in at least one module, select a future date, and upload materials.');
-      return;
-    }
-
-    const loading = document.getElementById('planLoading');
-    loading.classList.remove('hidden');
-    document.getElementById('generatePlanBtn').disabled = true;
-
-    setTimeout(() => {
-      try {
-        const schedule = buildSchedule(validModules);
-        saveSchedule(schedule);
-      } catch (e) {
-        alert("Error building schedule: " + e.message);
-      } finally {
-        loading.classList.add('hidden');
-        document.getElementById('generatePlanBtn').disabled = false;
-      }
-    }, 100);
-  };
-
-  function buildSchedule(modules) {
-    const schedule = [];
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-
-    const blocks = [
-      { start: 8, end: 10.5, label: '08:00 - 10:30' },
-      { start: 13, end: 15.5, label: '13:00 - 15:30' },
-      { start: 18, end: 20, label: '18:00 - 20:00' }
-    ];
-
-    modules.forEach(mod => {
-      const examDate = new Date(mod.date);
-      examDate.setHours(0,0,0,0);
-      let daysLeft = Math.ceil((examDate - now) / (1000 * 60 * 60 * 24));
-      if (daysLeft <= 0) daysLeft = 1;
-
-      const totalPages = mod.materials.reduce((sum, m) => sum + m.pages, 0);
-      const pagesPerDay = Math.ceil(totalPages / daysLeft);
-
-      let currentDay = new Date(now);
-      let currentPage = 1;
-
-      for (let d = 0; d < daysLeft; d++) {
-        if (currentPage > totalPages) break;
-
-        const dayString = currentDay.toLocaleDateString('en-ZA', { weekday: 'long', month: 'short', day: 'numeric' });
-        const dayTasks = [];
-        const pagesPerBlock = Math.ceil(pagesPerDay / blocks.length);
-
-        blocks.forEach((block) => {
-          if (currentPage > totalPages) return;
-          const endPage = Math.min(currentPage + pagesPerBlock - 1, totalPages);
-          const docName = mod.materials[0].name.replace(/\.[^/.]+$/, "");
-          
-          dayTasks.push({
-            time: block.label,
-            task: `Study: ${docName}`,
-            details: `Pages ${currentPage} - ${endPage}`
-          });
-
-          currentPage = endPage + 1;
-        });
-
-        dayTasks.push({
-          time: '20:30 - 21:30',
-          task: `Revision: ${mod.name}`,
-          details: `Review what you learned today.`
-        });
-
-        schedule.push({
-          dateStr: dayString,
-          timestamp: currentDay.getTime(),
-          moduleName: mod.name,
-          tasks: dayTasks
-        });
-
-        currentDay.setDate(currentDay.getDate() + 1);
-      }
-    });
-
-    schedule.sort((a, b) => a.timestamp - b.timestamp);
-    return schedule;
-  }
-
-  function saveSchedule(schedule) {
-    localStorage.setItem('studypad_exam_schedule', JSON.stringify(schedule));
-    renderSavedPlans();
-  }
-
-  function renderSavedPlans() {
-    const saved = JSON.parse(localStorage.getItem('studypad_exam_schedule') || '[]');
-    const container = document.getElementById('savedPlansList');
-    
-    if (saved.length === 0) {
-      container.innerHTML = '<p style="font-size: 13px; color: var(--text-muted); text-align: center; margin-top: 40px;">No plan generated yet.</p>';
-      return;
-    }
-
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    const todayTime = today.getTime();
-
-    container.innerHTML = saved.map(day => {
-      const isPast = day.timestamp < todayTime;
-      const isToday = day.timestamp === todayTime;
-      
-      let borderColor = 'var(--border)';
-      let bgColor = '#fff';
-      let titleColor = 'var(--text-main)';
-      
-      if (isToday) { borderColor = 'var(--primary)'; bgColor = 'var(--primary-light)'; titleColor = 'var(--primary)'; }
-      else if (isPast) { borderColor = 'var(--border)'; bgColor = 'var(--bg-main)'; titleColor = 'var(--text-light)'; }
-
-      const tasksHtml = day.tasks.map(t => `
-        <div style="display: flex; gap: 12px; margin-bottom: 12px; opacity: ${isPast ? 0.5 : 1};">
-          <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); width: 90px; flex-shrink: 0;">${t.time}</div>
-          <div>
-            <div style="font-size: 13px; font-weight: 600; color: ${titleColor};">${t.task}</div>
-            <div style="font-size: 12px; color: var(--text-muted);">${t.details}</div>
-          </div>
-        </div>
-      `).join('');
-
-      return `
-        <div style="border: 2px solid ${borderColor}; background: ${bgColor}; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid ${borderColor}; padding-bottom: 8px;">
-            <h4 style="font-weight: 800; font-size: 14px; color: ${titleColor};">${day.dateStr} ${isToday ? '(TODAY)' : ''}</h4>
-            <span style="font-size: 11px; font-weight: 600; background: #fff; padding: 2px 8px; border-radius: 999px; border: 1px solid ${borderColor};">${day.moduleName}</span>
-          </div>
-          ${tasksHtml}
-          <button class="btn-secondary" style="width: 100%; font-size: 12px; padding: 8px; margin-top: 8px;" onclick="openFocusTimer('${day.moduleName.replace(/'/g, "\\'")}')">
-            <i class="fas fa-play-circle"></i> Start Session
-          </button>
-        </div>
-      `;
-    }).join('');
-  }
-
-  // ==================== FOCUS TIMER (Voice) ====================
-  function openFocusTimer(subject) {
-    const container = document.getElementById('timerContainer');
-    container.classList.remove('hidden');
-    document.getElementById('timerSubjectTitle').textContent = `Focus: ${subject}`;
-    document.getElementById('timerStatus').textContent = 'Ready to focus. The voice assistant will guide you.';
-    
-    container.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    
-    stopFocusTimer();
-    currentTimerSeconds = 25 * 60;
-    updateTimerDisplay();
-  }
-
-  function startFocusTimer() {
-    if (timerRunning) return;
-    timerRunning = true;
-    
-    const startBtn = document.getElementById('timerStartBtn');
-    startBtn.disabled = true;
-    startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running...';
-    
-    speakText("Focus session started. You have 25 minutes. Let's get to work.");
-    document.getElementById('timerStatus').textContent = 'Focus session in progress...';
-
-    timerInterval = setInterval(() => {
-      currentTimerSeconds--;
-      updateTimerDisplay();
-      
-      if (currentTimerSeconds === 750) {
-        speakText("You are halfway through your focus session. Keep going!");
-      }
-      
-      if (currentTimerSeconds <= 0) {
-        clearInterval(timerInterval);
-        timerRunning = false;
-        speakText("Focus session complete! Great job. Take a 5-minute break.");
-        document.getElementById('timerStatus').textContent = 'Session complete! Take a break.';
-        startBtn.disabled = false;
-        startBtn.innerHTML = '<i class="fas fa-play"></i> Start';
-      }
-    }, 1000);
-  }
-
-  function stopFocusTimer() {
-    if (timerInterval) clearInterval(timerInterval);
-    timerRunning = false;
-    
-    const startBtn = document.getElementById('timerStartBtn');
-    if (startBtn) {
-      startBtn.disabled = false;
-      startBtn.innerHTML = '<i class="fas fa-play"></i> Start';
-    }
-    
-    window.speechSynthesis.cancel();
-    document.getElementById('timerStatus').textContent = 'Timer stopped.';
-  }
-
-  function updateTimerDisplay() {
-    const m = Math.floor(currentTimerSeconds / 60).toString().padStart(2, '0');
-    const s = (currentTimerSeconds % 60).toString().padStart(2, '0');
-    document.getElementById('timerDisplay').textContent = `${m}:${s}`;
-  }
-
-  function speakText(text) {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.rate = 1.0;
-      u.pitch = 1.0;
-      window.speechSynthesis.speak(u);
-    }
-  }
-
-  // Init on load
-  document.addEventListener('DOMContentLoaded', () => {
-    addModuleInput();
-    renderSavedPlans();
-  });
-
-  if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
-    speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
-  }
-
-  // ==================== EXPORTS ====================
-  window.showPage = showPage;
-  window.toggleSubmenu = toggleSubmenu;
-  window.handleSearch = handleSearch;
-  window.switchDocTab = switchDocTab;
-  window.handleStudentUpload = handleStudentUpload;
-  window.runStudentDetector = runStudentDetector;
-  window.downloadProfessionalReport = downloadProfessionalReport;
-  window.handleLecturerUpload = handleLecturerUpload;
-  window.handleTutorUpload = handleTutorUpload;
-  window.openPricing = openPricing;
-  window.closePricing = closePricing;
-  window.startCheckout = startCheckout;
-  window.verifyDevCode = verifyDevCode;
-  window.closeDevModal = closeDevModal;
-  window.copyOutput = copyOutput;
-  window.downloadTxt = downloadTxt;
-  window.openResearchPage = openResearchPage;
-  window.closeResearchPage = closeResearchPage;
-  // Add these missing window exports so the inline HTML onclick works
-  window.runHumanizer = runHumanizer;
-  window.clearHumanizer = clearHumanizer;
-</script>
+    if (synth.getVoices().length) { synth.cancel();
+</script>                                   
 </body>
 </html>
