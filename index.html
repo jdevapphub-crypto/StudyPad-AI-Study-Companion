@@ -587,6 +587,15 @@
           <div>
             <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">Quiz Mode:</label>
             <select id="qzMode" class="form-control">
+                    <div style="margin-top: 12px;">
+            <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">Number of Questions:</label>
+            <select id="qzCount" class="form-control">
+              <option value="5">5 Questions (Quick)</option>
+              <option value="10" selected>10 Questions (Standard)</option>
+              <option value="15">15 Questions (Thorough)</option>
+              <option value="20">20 Questions (Full Test)</option>
+            </select>
+          </div>
               <option value="practice">🎯 Practice (Immediate Feedback)</option>
               <option value="test">📝 Test (Timed & Graded)</option>
             </select>
@@ -1185,11 +1194,11 @@
         body: JSON.stringify({
           action: 'quiz',
           text: topic,
-          system: `You are an exam question generator. Based on the study material below, create 5 multiple-choice questions. 
-          IMPORTANT: Ignore any cover pages, table of contents, references, or bibliography. Only test actual content.
-          Return ONLY valid JSON in this exact format:
-          [{"question":"...","options":["A","B","C","D"],"answer":"the correct option text"}]
-          ${qzMode === 'test' ? 'Questions should be exam-style, testing deep understanding.' : 'Questions should test key facts and concepts.'}`
+          system: system: `You are an exam question generator. Based on the study material below, create ${questionCount} multiple-choice questions. 
+IMPORTANT: Ignore any cover pages, table of contents, references, or bibliography. Only test actual content.
+Return ONLY valid JSON in this exact format:
+[{"question":"...","options":["A","B","C","D"],"answer":"the correct option text"}]
+${qzMode === 'test' ? 'Questions should be exam-style, testing deep understanding.' : 'Questions should test key facts and concepts.'}`
         })
       });
       const rawData = await res.json();
