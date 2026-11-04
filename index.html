@@ -908,6 +908,7 @@
 
   // ==================== CONFIG ====================
   const WORKER_URL = "https://young-recipe-a9fastudypadsmart.jdevapphub.workers.dev";
+  const FLASHCARD_WORKER = "https://royal-morning-a089flashcardsai.jdevapphub.workers.dev/";
   const AI_DETECTOR_URL = "https://sapling-aidetector.jdevapphub.workers.dev"; 
   const AI_DETECT_API = AI_DETECTOR_URL + '/api/detect';
   const TUTOR_WORKER_URL = "https://ai-tutor.jdevapphub.workers.dev/"; 
@@ -1178,14 +1179,24 @@
 
     try {
       // Send filtered text and mode to worker
-      const res = await callWorker('quiz', topic, 
-        `You are an exam question generator. Based on the study material below, create 5 multiple-choice questions. 
-        IMPORTANT: Ignore any cover pages, table of contents, references, or bibliography. Only test actual content.
-        Return ONLY valid JSON in this exact format:
-        [{"question":"...","options":["A","B","C","D"],"answer":"the correct option text"}]
-        ${qzMode === 'test' ? 'Questions should be exam-style, testing deep understanding.' : 'Questions should test key facts and concepts.'}`
-      );
+            const res = await fetch(FLASHCARD_WORKER, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'quiz',
+          text: topic,
+          system: `You are an exam question generator. Based on the study material below, create 5 multiple-choice questions. 
+          IMPORTANT: Ignore any cover pages, table of contents, references, or bibliography. Only test actual content.
+          Return ONLY valid JSON in this exact format:
+          [{"question":"...","options":["A","B","C","D"],"answer":"the correct option text"}]
+          ${qzMode === 'test' ? 'Questions should be exam-style, testing deep understanding.' : 'Questions should test key facts and concepts.'}`
+        })
+      });
+      const rawData = await res.json();
+      const rawText = rawData.result || rawData.answer || '';
+      if (!res.ok || rawData.error) throw new Error(rawData.error || 'Worker error');
       
+      const questions = parseQuizResponse(rawText);      
       const questions = parseQuizResponse(res);
       if (!questions || questions.length === 0) {
         throw new Error('Worker did not return valid quiz questions. Please try again.');
@@ -1730,6 +1741,49 @@
   // Init on load
   document.addEventListener('DOMContentLoaded', () => { addModuleInput(); renderSavedPlans(); });
   if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+
+  // ==================== FLASHCARDS ====================
+  let fcDocText = '';
+  
+  async function handleFcFile(input) {
+    const file = input.files[0]; if (!file) return;
+    fcDocText = await readDoc(file);
+    document.getElementById('fcIn').value = `[File uploaded: ${file.name}]`;
+  }
+
+  document.getElementById('fcBtn').onclick = async () => {
+    const typedText = document.getElementById('fcIn').value.trim();
+    const topic = typedText.startsWith('[') ? fcDocText : (typedText || fcDocText);
+
+    if (!topic || topic.length < 50) { 
+      alert('Please paste at least 50 words or upload a longer document to generate flashcards.'); 
+      return; 
+    }
+
+    const btn = document.getElementById('fcBtn'); 
+    const card = document.getElementById('fcCard');
+    btn.disabled = true; btn.textContent = '⏳ Generating...';
+    
+    try {
+      const res = await fetch(FLASHCARD_WORKER, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'flashcards', text: topic })
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || 'Worker error');
+      
+      const result = data.result || data.answer || '';
+      card.style.display = 'block';
+      document.getElementById('fcSide').textContent = 'Flashcards';
+      document.getElementById('fcText').textContent = result;
+    } catch (e) { 
+      alert('Error: ' + e.message); 
+    } finally { 
+      btn.disabled = false; 
+      btn.textContent = 'Generate Flashcards'; 
+    }
+  };
 
   // ==================== EXPORTS ====================
   window.showPage = showPage;
