@@ -919,6 +919,10 @@
   // ==================== INIT ====================
   document.addEventListener('DOMContentLoaded', () => {
     if (window.innerWidth <= 768) document.getElementById('mobileMenuBtn').style.display = 'block';
+    // Setup basic listeners
+    document.getElementById('hInput').addEventListener('input', (e) => {
+      document.getElementById('hWordCount').textContent = (e.target.value.match(/\S+/g) || []).length;
+    });
   });
 
   function showPage(pageId) {
@@ -1005,7 +1009,7 @@
     if (!PAYSTACK_ENABLED) {
       localStorage.setItem('studypad_premium_expiry', Date.now() + (30 * 24 * 60 * 60 * 1000));
       localStorage.setItem('studypad_premium_tier', tierKey);
-      checkTrialStatus(); // Update UI
+      checkTrialStatus();
       closePricing();
       alert(`🧪 TEST MODE: ${tierKey.toUpperCase()} unlocked!`);
       return;
@@ -1126,6 +1130,69 @@
     showPage('research');
   }
 
+  // ==================== HUMANIZER ====================
+  async function runHumanizer() {
+    const input = document.getElementById('hInput').value.trim();
+    const outputBox = document.getElementById('hOutput');
+    const errorMsg = document.getElementById('hError');
+    const btn = document.getElementById('hRunBtn');
+
+    if (!input) {
+      errorMsg.textContent = 'Please paste your text first.';
+      errorMsg.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Processing...';
+    outputBox.innerHTML = '<p class="output-empty" style="color:var(--text-light);font-style:italic;">Thinking...</p>';
+    errorMsg.style.display = 'none';
+    document.getElementById('hHumanizedBanner').classList.add('hidden');
+
+    try {
+      const res = await fetch(WORKER_URL, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'humanize', text: input })
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || 'Worker error');
+      
+      const result = data.result || data.answer || '';
+      if (!result) throw new Error('Empty AI response');
+
+      outputBox.textContent = result;
+    } catch (e) {
+      errorMsg.textContent = 'Error: ' + e.message;
+      errorMsg.style.display = 'block';
+      outputBox.innerHTML = '<p class="output-empty">Something went wrong.</p>';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '✨ Humanize Text';
+    }
+  }
+
+  function clearHumanizer() {
+    document.getElementById('hInput').value = '';
+    document.getElementById('hOutput').innerHTML = '<p class="output-empty" style="color:var(--text-light);font-style:italic;">Your improved text will appear here.</p>';
+    document.getElementById('hWordCount').textContent = '0';
+    document.getElementById('hHumanizedBanner').classList.add('hidden');
+    document.getElementById('hError').style.display = 'none';
+  }
+
+  function copyOutput() {
+    const text = document.getElementById('hOutput').textContent.trim();
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => alert('Copied to clipboard!'));
+  }
+
+  function downloadTxt() {
+    const text = document.getElementById('hOutput').textContent.trim();
+    if (!text) return;
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'studypad.txt'; a.click();
+  }
+
   // ==================== AI DETECTOR (Document Centre) ====================
   function switchDocTab(tab) {
     document.querySelectorAll('.doc-tab').forEach(b => b.classList.remove('active'));
@@ -1162,7 +1229,7 @@
     try {
       const res = await fetch(AI_DETECT_API, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: currentDocText }) // <--- Removed the 5000 character limit
+        body: JSON.stringify({ text: currentDocText }) 
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -1187,7 +1254,7 @@
     }
   }
 
-    async function handleLecturerUpload(input) {
+  async function handleLecturerUpload(input) {
     const files = input.files;
     if (!files.length) return;
     const list = document.getElementById('lecturerDocList');
@@ -1211,11 +1278,8 @@
       
       try {
         const fullText = await readDoc(file);
-        
-        // Extract first 1000 characters (Cover page area)
         const coverPageText = fullText.substring(0, 1000); 
 
-        // 1. Regex to catch Name, Surname, Last Name variations
         const nameRegex = /(?:name|surname|last name)\s*[:\-]?\s*([A-Za-z\s\-']{2,60})(?=\n|\r|,|$)/gi;
         let names = [];
         let match;
@@ -1224,21 +1288,18 @@
         }
         const studentName = names.length > 0 ? names.join(' ') : 'Unknown Name';
 
-        // 2. Regex to catch Student ID, Student No, Student Number
         const idRegex = /(?:student\s*(?:id|number|no\.?|#)|stud\.?\s*no\.?)\s*[:\-]?\s*([A-Z0-9\-]{5,20})/gi;
         const idMatch = coverPageText.match(idRegex);
         const studentId = idMatch ? idMatch[1] : 'Unknown ID';
         
-        // 3. Run AI Detection
         const res = await fetch(AI_DETECT_API, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: fullText.substring(0, 5000) })
+          body: JSON.stringify({ text: fullText })
         });
         const data = await res.json();
         const score = data.score || 0;
         const color = score > 60 ? 'var(--red)' : score > 20 ? 'var(--amber)' : 'var(--green)';
         
-        // 4. Update UI with parsed data
         div.innerHTML = `
           <div style="display:flex;align-items:center;gap:12px; flex: 1; min-width: 200px;">
             <i class="fas fa-file-pdf" style="color:var(--primary);font-size:20px;"></i>
@@ -1263,12 +1324,11 @@
   }
 
   // ==================== PDF REPORT GENERATOR ====================
-    function downloadProfessionalReport() {
+  function downloadProfessionalReport() {
     if (currentDocScore === null) return;
     const name = document.getElementById('docStudentName').value || 'Student Name';
     const module = document.getElementById('docModuleCode').value || 'Module Code';
     
-    // Get real-time date and time
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-ZA', { year: 'numeric', month: 'long', day: 'numeric' });
     const timeStr = now.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' });
@@ -1276,7 +1336,6 @@
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
-    // --- Header ---
     doc.setFillColor(37, 99, 235);
     doc.rect(0, 0, 210, 40, 'F');
     doc.setTextColor(255, 255, 255);
@@ -1287,7 +1346,6 @@
     doc.setFont('helvetica', 'normal');
     doc.text('AI Detection Report', 20, 30);
     
-    // --- Document Details ---
     doc.setTextColor(15, 23, 42);
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
@@ -1301,7 +1359,6 @@
     doc.text(`File Name: ${currentDocName}`, 20, 94);
     doc.text(`Tool Used: AI Detector (Sapling API)`, 20, 102);
     
-    // --- Score Box ---
     doc.setDrawColor(226, 232, 240);
     doc.setFillColor(248, 250, 252);
     doc.roundedRect(20, 115, 170, 45, 5, 5, 'FD');
@@ -1316,7 +1373,6 @@
     doc.setFontSize(32);
     doc.text(`${currentDocScore}%`, 30, 150);
     
-    // --- Disclaimer ---
     doc.setTextColor(100, 116, 139);
     doc.setFontSize(9);
     doc.setFont('helvetica', 'italic');
@@ -1638,18 +1694,6 @@
       if (document.querySelector(`script[src="${src}"]`)) return ok();
       const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s);
     });
-  }
-
-  function copyOutput() {
-    const text = document.getElementById('hOutput').textContent;
-    navigator.clipboard.writeText(text).then(() => alert('Copied!'));
-  }
-
-  function downloadTxt() {
-    const text = document.getElementById('hOutput').textContent;
-    const blob = new Blob([text], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'studypad.txt'; a.click();
   }
 
   // ==================== EXAM PREP PLANNER & TIMER ====================
@@ -1998,6 +2042,9 @@
   window.downloadTxt = downloadTxt;
   window.openResearchPage = openResearchPage;
   window.closeResearchPage = closeResearchPage;
+  // Add these missing window exports so the inline HTML onclick works
+  window.runHumanizer = runHumanizer;
+  window.clearHumanizer = clearHumanizer;
 </script>
 </body>
 </html>
