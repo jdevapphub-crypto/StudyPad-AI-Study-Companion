@@ -1074,15 +1074,29 @@
     document.getElementById('qzIn').value = `[File uploaded: ${file.name}]`;
   }
 
-  document.getElementById('qzBtn').onclick = async () => {
-    const topic = document.getElementById('qzIn').value.trim() || qzDocText;
-    if (!topic) { alert('Please upload a document or type a topic.'); return; }
-    const btn = document.getElementById('qzBtn'); const out = document.getElementById('qzWrap');
-    btn.disabled = true; btn.textContent = '⏳ Generating...'; out.innerHTML = '<p class="output-empty">Thinking...</p>';
+    document.getElementById('qzBtn').onclick = async () => {
+    const typedText = document.getElementById('qzIn').value.trim();
+    const topic = typedText.startsWith('[File uploaded:') ? qzDocText : (typedText || qzDocText);
+
+    if (!topic || topic.length < 50) { 
+      alert('Please paste at least 50 words or upload a longer document to generate a quiz.'); 
+      return; 
+    }
+
+    const btn = document.getElementById('qzBtn'); 
+    const out = document.getElementById('qzWrap');
+    btn.disabled = true; btn.textContent = '⏳ Generating...'; 
+    out.innerHTML = '<p class="output-empty">Thinking...</p>';
+    
     try {
       const res = await callWorker('quiz', topic);
       out.innerHTML = `<div style="white-space: pre-wrap;">${res}</div>`;
-    } catch (e) { out.innerHTML = 'Error generating quiz.'; } finally { btn.disabled = false; btn.textContent = 'Start Quiz'; }
+    } catch (e) { 
+      out.innerHTML = `<p style="color: red;">Error: ${e.message}</p>`; 
+    } finally { 
+      btn.disabled = false; 
+      btn.textContent = 'Start Quiz'; 
+    }
   };
 
   async function handleFcFile(input) {
@@ -1092,17 +1106,31 @@
     document.getElementById('fcIn').value = `[File uploaded: ${file.name}]`;
   }
 
-  document.getElementById('fcBtn').onclick = async () => {
-    const topic = document.getElementById('fcIn').value.trim() || fcDocText;
-    if (!topic) { alert('Please upload a document or type a topic.'); return; }
-    const btn = document.getElementById('fcBtn'); const card = document.getElementById('fcCard');
+    document.getElementById('fcBtn').onclick = async () => {
+    const typedText = document.getElementById('fcIn').value.trim();
+    // If they uploaded a file, use the file text, otherwise use typed text
+    const topic = typedText.startsWith('[File uploaded:') ? fcDocText : (typedText || fcDocText);
+
+    if (!topic || topic.length < 50) { 
+      alert('Please paste at least 50 words or upload a longer document to generate flashcards.'); 
+      return; 
+    }
+
+    const btn = document.getElementById('fcBtn'); 
+    const card = document.getElementById('fcCard');
     btn.disabled = true; btn.textContent = '⏳ Generating...';
+    
     try {
       const res = await callWorker('flashcards', topic);
       card.style.display = 'block';
-      document.getElementById('fcSide').textContent = 'Generated';
+      document.getElementById('fcSide').textContent = 'Flashcards';
       document.getElementById('fcText').textContent = res;
-    } catch (e) { alert('Error generating flashcards.'); } finally { btn.disabled = false; btn.textContent = 'Generate Flashcards'; }
+    } catch (e) { 
+      alert('Error generating flashcards: ' + e.message); 
+    } finally { 
+      btn.disabled = false; 
+      btn.textContent = 'Generate Flashcards'; 
+    }
   };
 
   // ==================== AI DETECTOR ====================
