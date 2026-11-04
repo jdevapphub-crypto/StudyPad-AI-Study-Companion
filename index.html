@@ -1187,7 +1187,7 @@
     }
   }
 
-  async function handleLecturerUpload(input) {
+    async function handleLecturerUpload(input) {
     const files = input.files;
     if (!files.length) return;
     const list = document.getElementById('lecturerDocList');
@@ -1196,37 +1196,87 @@
     for (let file of files) {
       const div = document.createElement('div');
       div.className = 'doc-item';
-      div.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:16px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;background:#fff;';
-      div.innerHTML = `<div style="display:flex;align-items:center;gap:12px;"><i class="fas fa-file-pdf" style="color:var(--primary);font-size:20px;"></i><div><h4 style="font-size:14px;font-weight:700;">${file.name}</h4><p style="font-size:12px;color:var(--text-muted);">Scanning...</p></div></div><div style="font-weight:800;font-size:14px;color:var(--text-muted);">...</div>`;
+      div.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:16px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;background:#fff;flex-wrap:wrap;gap:12px;';
+      
+      div.innerHTML = `
+        <div style="display:flex;align-items:center;gap:12px;">
+          <i class="fas fa-file-pdf" style="color:var(--primary);font-size:20px;"></i>
+          <div>
+            <h4 style="font-size:14px;font-weight:700;">${file.name}</h4>
+            <p style="font-size:12px;color:var(--text-muted);">Scanning cover page...</p>
+          </div>
+        </div>
+        <div style="font-weight:800;font-size:14px;color:var(--text-muted);">...</div>`;
       list.appendChild(div);
       
       try {
-        const text = await readDoc(file);
+        const fullText = await readDoc(file);
+        
+        // Extract first 1000 characters (Cover page area)
+        const coverPageText = fullText.substring(0, 1000); 
+
+        // 1. Regex to catch Name, Surname, Last Name variations
+        const nameRegex = /(?:name|surname|last name)\s*[:\-]?\s*([A-Za-z\s\-']{2,60})(?=\n|\r|,|$)/gi;
+        let names = [];
+        let match;
+        while ((match = nameRegex.exec(coverPageText)) !== null) {
+          names.push(match[1].trim());
+        }
+        const studentName = names.length > 0 ? names.join(' ') : 'Unknown Name';
+
+        // 2. Regex to catch Student ID, Student No, Student Number
+        const idRegex = /(?:student\s*(?:id|number|no\.?|#)|stud\.?\s*no\.?)\s*[:\-]?\s*([A-Z0-9\-]{5,20})/gi;
+        const idMatch = coverPageText.match(idRegex);
+        const studentId = idMatch ? idMatch[1] : 'Unknown ID';
+        
+        // 3. Run AI Detection
         const res = await fetch(AI_DETECT_API, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: text.substring(0, 5000) })
+          body: JSON.stringify({ text: fullText.substring(0, 5000) })
         });
         const data = await res.json();
         const score = data.score || 0;
         const color = score > 60 ? 'var(--red)' : score > 20 ? 'var(--amber)' : 'var(--green)';
         
-        div.querySelector('p').textContent = 'Scan complete';
-        div.querySelector('div:last-child').innerHTML = `<span style="color:${color};">${score}% AI</span>`;
+        // 4. Update UI with parsed data
+        div.innerHTML = `
+          <div style="display:flex;align-items:center;gap:12px; flex: 1; min-width: 200px;">
+            <i class="fas fa-file-pdf" style="color:var(--primary);font-size:20px;"></i>
+            <div>
+              <h4 style="font-size:14px;font-weight:700;">${file.name}</h4>
+              <p style="font-size:12px;color:var(--text-muted);">
+                👤 <strong>${studentName}</strong> <br>
+                🎓 <strong>${studentId}</strong>
+              </p>
+            </div>
+          </div>
+          <div style="font-weight:800;font-size:14px;color:${color}; white-space:nowrap;">
+            ${score}% AI
+          </div>
+        `;
+        
       } catch (e) {
-        div.querySelector('p').textContent = 'Error reading file';
+        div.querySelector('p').textContent = 'Error reading file or detecting AI';
+        div.querySelector('div:last-child').innerHTML = `<span style="color:var(--red);">Failed</span>`;
       }
     }
   }
 
   // ==================== PDF REPORT GENERATOR ====================
-  function downloadProfessionalReport() {
+    function downloadProfessionalReport() {
     if (currentDocScore === null) return;
     const name = document.getElementById('docStudentName').value || 'Student Name';
     const module = document.getElementById('docModuleCode').value || 'Module Code';
     
+    // Get real-time date and time
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-ZA', { year: 'numeric', month: 'long', day: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' });
+
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
+    // --- Header ---
     doc.setFillColor(37, 99, 235);
     doc.rect(0, 0, 210, 40, 'F');
     doc.setTextColor(255, 255, 255);
@@ -1237,37 +1287,43 @@
     doc.setFont('helvetica', 'normal');
     doc.text('AI Detection Report', 20, 30);
     
+    // --- Document Details ---
     doc.setTextColor(15, 23, 42);
-    doc.setFontSize(12);
+    doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text('Document Details', 20, 60);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Name & Surname: ${name}`, 20, 70);
-    doc.text(`Module Code: ${module}`, 20, 80);
-    doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 90);
-    doc.text(`File Analyzed: ${currentDocName}`, 20, 100);
-    doc.text(`Tool Used: AI Detector (Sapling API)`, 20, 110);
+    doc.text('Student Details', 20, 60);
     
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Full Name: ${name}`, 20, 70);
+    doc.text(`Module Code: ${module}`, 20, 78);
+    doc.text(`Date Analyzed: ${dateStr} at ${timeStr}`, 20, 86);
+    doc.text(`File Name: ${currentDocName}`, 20, 94);
+    doc.text(`Tool Used: AI Detector (Sapling API)`, 20, 102);
+    
+    // --- Score Box ---
     doc.setDrawColor(226, 232, 240);
     doc.setFillColor(248, 250, 252);
-    doc.roundedRect(20, 125, 170, 40, 5, 5, 'FD');
+    doc.roundedRect(20, 115, 170, 45, 5, 5, 'FD');
     
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text('AI Similarity Score:', 30, 140);
+    doc.setTextColor(15, 23, 42);
+    doc.text('AI Similarity Score:', 30, 132);
     
     const scoreColor = currentDocScore > 60 ? [239, 68, 68] : currentDocScore > 20 ? [245, 158, 11] : [34, 197, 94];
     doc.setTextColor(scoreColor[0], scoreColor[1], scoreColor[2]);
-    doc.setFontSize(28);
-    doc.text(`${currentDocScore}%`, 30, 158);
+    doc.setFontSize(32);
+    doc.text(`${currentDocScore}%`, 30, 150);
     
+    // --- Disclaimer ---
     doc.setTextColor(100, 116, 139);
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'italic');
-    doc.text('Disclaimer: AI detection is probabilistic. Use this report as guidance, not proof.', 20, 190);
-    doc.text('Report generated by StudyPad AI Study Companion.', 20, 196);
+    doc.text('Disclaimer: AI detection is probabilistic. Use this report as guidance, not proof.', 20, 180);
+    doc.text('Report generated securely by StudyPad AI Study Companion.', 20, 186);
     
-    doc.save(`StudyPad_AI_Report_${module || 'Document'}.pdf`);
+    doc.save(`StudyPad_Report_${module || 'Document'}_${name.split(' ')[0]}.pdf`);
   }
 
   // ==================== AI TUTOR ====================
