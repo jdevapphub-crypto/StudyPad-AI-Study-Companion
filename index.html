@@ -175,6 +175,20 @@
     .tier li i { color: var(--green); margin-top: 2px; }
     .tier .btn-tier { width: 100%; padding: 10px; border-radius: var(--radius-sm); background: var(--primary); color: #fff; font-weight: 700; font-size: 13px; text-align: center; }
 
+        /* QUIZ OPTIONS */
+    .qz-option {
+      padding: 14px 18px; border: 1.5px solid var(--border); background: #fff; color: var(--text-main);
+      border-radius: 10px; font-size: 15px; font-weight: 500; text-align: left; cursor: pointer;
+      transition: 0.15s; font-family: inherit; display: block; width: 100%;
+    }
+    .qz-option:hover { border-color: var(--primary); background: var(--primary-light); }
+    .qz-option.correct { background: var(--green-bg); border-color: var(--green); color: #166534; }
+    .qz-option.wrong { background: var(--red-bg); border-color: var(--red); color: #991b1b; }
+    .qz-option:disabled { cursor: default; }
+    .qz-timer { font-size: 18px; font-weight: 700; color: var(--primary); background: var(--primary-light); padding: 6px 16px; border-radius: 999px; display: inline-block; }
+    .qz-progress { height: 6px; background: var(--bg-main); border-radius: 999px; overflow: hidden; margin-bottom: 16px; }
+    .qz-progress-bar { height: 100%; background: var(--primary); transition: width 0.3s; border-radius: 999px; }
+
     /* RESPONSIVE */
     @media (max-width: 1024px) { .dashboard-grid { grid-template-columns: 1fr; } .hero-img { display: none; } .tutor-layout { grid-template-columns: 1fr; height: auto; } .tutor-sidebar { height: 200px; } }
     @media (max-width: 768px) {
@@ -553,24 +567,40 @@
     </div>
 
     <!-- ================= OTHER TOOLS ================= -->
+       <!-- ================= QUIZ ================= -->
     <div id="page-quiz" class="page">
       <div class="back-link" onclick="showPage('dashboard')"><i class="fas fa-arrow-left"></i> Back</div>
       <h2 style="margin-bottom: 16px;">Quiz Generator</h2>
-      <div class="card-panel" style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
+      
+      <div class="card-panel" style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px;">
         <div class="upload-zone" onclick="document.getElementById('qzFile').click()">
           <i class="fas fa-file-upload"></i>
           <p>Upload PDF or Word</p>
           <input type="file" id="qzFile" accept=".pdf,.docx" onchange="handleQuizFile(this)">
         </div>
         <div class="form-group" style="margin-top: 16px;">
-          <label>Or type a topic:</label>
-          <textarea id="qzIn" class="form-control" placeholder="e.g. Cell biology..."></textarea>
+          <label>Or paste your study material:</label>
+          <textarea id="qzIn" class="form-control" placeholder="Paste at least 100 words of study notes here..." style="height: 100px;"></textarea>
         </div>
-        <button class="btn-primary" id="qzBtn">Start Quiz</button>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+          <div>
+            <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">Quiz Mode:</label>
+            <select id="qzMode" class="form-control">
+              <option value="practice">🎯 Practice (Immediate Feedback)</option>
+              <option value="test">📝 Test (Timed & Graded)</option>
+            </select>
+          </div>
+          <div id="qzTimerInput" style="display: none;">
+            <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">Time (minutes):</label>
+            <input type="number" id="qzTime" class="form-control" value="10" min="1" max="60">
+          </div>
+        </div>
+        
+        <button class="btn-primary" id="qzBtn" style="margin-top: 16px; width: 100%;">Start Quiz</button>
       </div>
-      <div class="card-panel" id="qzWrap" style="min-height: 150px; background:#fff; border-radius: 16px; padding: 20px; margin-top:16px;">
-        <p class="output-empty">Your quiz will appear here.</p>
-      </div>
+      
+      <div id="qzWrap" style="min-height: 150px;"></div>
     </div>
 
     <div id="page-flashcards" class="page">
@@ -1063,114 +1093,301 @@
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'studypad.txt'; a.click();
   }
 
-  // ==================== QUIZ & FLASHCARDS ====================
+    // ==================== QUIZ SYSTEM ====================
   let qzDocText = '';
-  let fcDocText = '';
+  let qzQuestions = [];
+  let qzCurrentIndex = 0;
+  let qzScore = 0;
+  let qzTimerInterval = null;
+  let qzTimeLeft = 0;
+  let qzMode = 'practice';
+  let qzUserAnswers = [];
 
   async function handleQuizFile(input) {
-    const file = input.files[0];
-    if (!file) return;
+    const file = input.files[0]; if (!file) return;
     qzDocText = await readDoc(file);
-    document.getElementById('qzIn').value = `[File uploaded: ${file.name}]`;
+    document.getElementById('qzIn').value = qzDocText.substring(0, 200) + '...';
   }
 
-    document.getElementById('qzBtn').onclick = async () => {
+  // Toggle timer input based on mode
+  document.getElementById('qzMode').addEventListener('change', (e) => {
+    document.getElementById('qzTimerInput').style.display = e.target.value === 'test' ? 'block' : 'none';
+  });
+
+  // ==================== SMART TEXT FILTER ====================
+  // Removes cover page, table of contents, and references from the study material
+  function filterStudyText(rawText) {
+    if (!rawText || rawText.length < 100) return rawText;
+    
+    let text = rawText;
+    const textLen = text.length;
+    
+    // 1. Remove the first 15% (likely cover page + title page)
+    const skipCover = Math.floor(textLen * 0.15);
+    text = text.substring(skipCover);
+    
+    // 2. Remove Table of Contents blocks
+    // Matches patterns like: "Table of Contents", "TABLE OF CONTENTS", "Contents"
+    const tocRegex = /(?:table of contents|^\s*contents\s*$)[\s\S]{0,3000}?(?=\n(?=[A-Z][a-z]+\s+[A-Z])|\n\n[A-Z][a-z]{3,}|$)/im;
+    text = text.replace(tocRegex, '');
+    
+    // 3. Remove References / Bibliography sections
+    const refRegex = /\n(?:references|bibliography|works cited|reference list|sources cited)[\s\S]*$/im;
+    text = text.replace(refRegex, '');
+    
+    // 4. Remove lines that look like TOC entries (e.g., "Chapter 1 ..... 5")
+    text = text.split('\n').filter(line => {
+      // Skip lines with lots of dots and a number at the end (TOC format)
+      if (/\.{3,}\s*\d+\s*$/.test(line)) return false;
+      // Skip short lines that are just chapter numbers
+      if (/^(chapter|section|part)\s+\d+/i.test(line.trim()) && line.length < 40) return false;
+      return true;
+    }).join('\n');
+    
+    // 5. Clean up excess whitespace
+    text = text.replace(/\n{3,}/g, '\n\n').trim();
+    
+    return text;
+  }
+
+  // ==================== START QUIZ ====================
+  document.getElementById('qzBtn').onclick = async () => {
     const typedText = document.getElementById('qzIn').value.trim();
-    const topic = typedText.startsWith('[File uploaded:') ? qzDocText : (typedText || qzDocText);
+    let topic = typedText.startsWith('[') ? qzDocText : (typedText || qzDocText);
 
-    if (!topic || topic.length < 50) { 
-      alert('Please paste at least 50 words or upload a longer document to generate a quiz.'); 
-      return; 
+    if (!topic || topic.length < 100) {
+      alert('Please paste at least 100 words or upload a longer document to generate a quiz.');
+      return;
     }
 
-    const btn = document.getElementById('qzBtn'); 
+    // Filter out cover page, TOC, references
+    topic = filterStudyText(topic);
+    
+    if (topic.length < 100) {
+      alert('The document text is too short after removing cover pages and references.');
+      return;
+    }
+
+    qzMode = document.getElementById('qzMode').value;
+    qzTimeLeft = parseInt(document.getElementById('qzTime').value || 10) * 60;
+
+    const btn = document.getElementById('qzBtn');
     const out = document.getElementById('qzWrap');
-    btn.disabled = true; btn.textContent = '⏳ Generating...'; 
-    out.innerHTML = '<p class="output-empty">Thinking...</p>';
-    
+    btn.disabled = true; btn.textContent = '⏳ Generating Quiz...';
+    out.innerHTML = '<div class="card-panel" style="text-align:center;padding:40px;"><i class="fas fa-spinner fa-spin" style="font-size:32px;color:var(--primary);"></i><p style="margin-top:12px;">Analyzing your study material...</p></div>';
+
     try {
-      const res = await callWorker('quiz', topic);
-      out.innerHTML = `<div style="white-space: pre-wrap;">${res}</div>`;
-    } catch (e) { 
-      out.innerHTML = `<p style="color: red;">Error: ${e.message}</p>`; 
-    } finally { 
-      btn.disabled = false; 
-      btn.textContent = 'Start Quiz'; 
-    }
-  };
-
-  async function handleFcFile(input) {
-    const file = input.files[0];
-    if (!file) return;
-    fcDocText = await readDoc(file);
-    document.getElementById('fcIn').value = `[File uploaded: ${file.name}]`;
-  }
-
-      document.getElementById('fcBtn').onclick = async () => {
-    const typedText = document.getElementById('fcIn').value.trim();
-    const topic = typedText.startsWith('[File uploaded:') ? fcDocText : (typedText || fcDocText);
-
-    if (!topic || topic.length < 50) { 
-      alert('Please paste at least 50 words or upload a longer document to generate flashcards.'); 
-      return; 
-    }
-
-    const btn = document.getElementById('fcBtn'); 
-    const card = document.getElementById('fcCard');
-    btn.disabled = true; btn.textContent = '⏳ Generating...';
-    
-    try {
-      const res = await callWorker('flashcards', topic);
+      // Send filtered text and mode to worker
+      const res = await callWorker('quiz', topic, 
+        `You are an exam question generator. Based on the study material below, create 5 multiple-choice questions. 
+        IMPORTANT: Ignore any cover pages, table of contents, references, or bibliography. Only test actual content.
+        Return ONLY valid JSON in this exact format:
+        [{"question":"...","options":["A","B","C","D"],"answer":"the correct option text"}]
+        ${qzMode === 'test' ? 'Questions should be exam-style, testing deep understanding.' : 'Questions should test key facts and concepts.'}`
+      );
       
-      // Parse JSON flashcards
-      let cards = null;
-      try {
-        const match = String(res).match(/\[[\s\S]*?\]/);
-        if (match) cards = JSON.parse(match[0]);
-      } catch (e) {}
-      
-      card.style.display = 'block';
-      if (Array.isArray(cards) && cards.length > 0) {
-        // Store cards and start flashcard viewing
-        window.currentFlashcards = cards.map(c => ({
-          q: c.question || c.q || c.front || '',
-          a: c.answer || c.a || c.back || ''
-        })).filter(c => c.q && c.a);
-        window.currentFcIndex = 0;
-        window.fcShowingAnswer = false;
-        showFlashcard();
-      } else {
-        document.getElementById('fcSide').textContent = 'Generated';
-        document.getElementById('fcText').textContent = res;
+      const questions = parseQuizResponse(res);
+      if (!questions || questions.length === 0) {
+        throw new Error('Worker did not return valid quiz questions. Please try again.');
       }
-    } catch (e) { 
-      alert('Error: ' + e.message); 
-    } finally { 
-      btn.disabled = false; 
-      btn.textContent = 'Generate Flashcards'; 
+      
+      // Shuffle questions
+      qzQuestions = questions.sort(() => Math.random() - 0.5);
+      qzCurrentIndex = 0;
+      qzScore = 0;
+      qzUserAnswers = new Array(qzQuestions.length).fill(null);
+      
+      renderQuiz();
+      
+      if (qzMode === 'test') {
+        startQuizTimer();
+      }
+    } catch (e) {
+      out.innerHTML = `<div class="card-panel" style="text-align:center;color:var(--red);padding:20px;">Error: ${e.message}</div>`;
+    } finally {
+      btn.disabled = false; btn.textContent = 'Start Quiz';
     }
   };
 
-  function showFlashcard() {
-    if (!window.currentFlashcards || window.currentFlashcards.length === 0) return;
-    const card = window.currentFlashcards[window.currentFcIndex];
-    document.getElementById('fcSide').textContent = window.fcShowingAnswer ? `Answer (${window.currentFcIndex + 1}/${window.currentFlashcards.length})` : `Question (${window.currentFcIndex + 1}/${window.currentFlashcards.length})`;
-    document.getElementById('fcText').textContent = window.fcShowingAnswer ? card.a : card.q;
+  function parseQuizResponse(raw) {
+    let json = null;
+    try {
+      const match = String(raw).match(/\[[\s\S]*\]/);
+      if (match) json = JSON.parse(match[0]);
+    } catch (e) {}
+    if (!Array.isArray(json)) return null;
+    return json.filter(q => q.question && Array.isArray(q.options) && q.answer && q.options.length === 4);
+  }
+
+  // ==================== RENDER QUIZ ====================
+  function renderQuiz() {
+    const out = document.getElementById('qzWrap');
     
-    // Add click-to-flip and next buttons if not present
-    let controls = document.getElementById('fcControls');
-    if (!controls) {
-      controls = document.createElement('div');
-      controls.id = 'fcControls';
-      controls.style.cssText = 'display:flex;gap:12px;margin-top:20px;justify-content:center;';
-      controls.innerHTML = `
-        <button class="btn-secondary" onclick="window.fcShowingAnswer=!window.fcShowingAnswer;showFlashcard();">Flip Card</button>
-        <button class="btn-primary" onclick="if(window.currentFcIndex < window.currentFlashcards.length-1){window.currentFcIndex++;window.fcShowingAnswer=false;showFlashcard();}">Next →</button>
-      `;
-      document.getElementById('fcCard').appendChild(controls);
+    if (qzCurrentIndex >= qzQuestions.length) {
+      showQuizResults();
+      return;
+    }
+
+    const q = qzQuestions[qzCurrentIndex];
+    const progress = ((qzCurrentIndex) / qzQuestions.length) * 100;
+    
+    let timerHtml = '';
+    if (qzMode === 'test' && qzTimerInterval) {
+      const mins = Math.floor(qzTimeLeft / 60).toString().padStart(2, '0');
+      const secs = (qzTimeLeft % 60).toString().padStart(2, '0');
+      timerHtml = `<div class="qz-timer" id="qzTimerDisplay">⏱ ${mins}:${secs}</div>`;
+    }
+
+    const optionsHtml = q.options.map((opt, i) => 
+      `<button class="qz-option" data-opt="${opt.replace(/"/g, '&quot;')}" onclick="selectQuizAnswer(this, ${i})">${opt}</button>`
+    ).join('');
+
+    out.innerHTML = `
+      <div class="card-panel" style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+          <span style="font-size:12px;font-weight:700;color:var(--text-muted);">Question ${qzCurrentIndex + 1} of ${qzQuestions.length}</span>
+          ${timerHtml}
+          ${qzMode === 'practice' ? `<span style="font-size:12px;color:var(--primary);font-weight:700;">Score: ${qzScore}</span>` : ''}
+        </div>
+        <div class="qz-progress"><div class="qz-progress-bar" style="width:${progress}%"></div></div>
+        <h3 style="font-size:17px;font-weight:700;margin-bottom:16px;line-height:1.5;">${q.question}</h3>
+        <div style="display:flex;flex-direction:column;gap:10px;">${optionsHtml}</div>
+      </div>
+    `;
+  }
+
+  // ==================== HANDLE ANSWER ====================
+  function selectQuizAnswer(btn, index) {
+    const q = qzQuestions[qzCurrentIndex];
+    const selected = q.options[index];
+    const allBtns = document.querySelectorAll('.qz-option');
+    
+    // Disable all buttons
+    allBtns.forEach(b => b.disabled = true);
+    
+    // Store the answer
+    qzUserAnswers[qzCurrentIndex] = selected;
+    
+    if (qzMode === 'practice') {
+      // Immediate feedback mode
+      if (selected === q.answer) {
+        qzScore++;
+        btn.classList.add('correct');
+      } else {
+        btn.classList.add('wrong');
+        // Show correct answer in green
+        allBtns.forEach(b => {
+          if (b.dataset.opt === q.answer) b.classList.add('correct');
+        });
+      }
+      
+      setTimeout(() => {
+        qzCurrentIndex++;
+        renderQuiz();
+      }, 1500);
+    } else {
+      // Test mode - just highlight the selection
+      btn.classList.add('correct');
+      
+      setTimeout(() => {
+        qzCurrentIndex++;
+        renderQuiz();
+      }, 400);
     }
   }
 
+  // ==================== TEST MODE TIMER ====================
+  function startQuizTimer() {
+    if (qzTimerInterval) clearInterval(qzTimerInterval);
+    
+    qzTimerInterval = setInterval(() => {
+      qzTimeLeft--;
+      
+      const display = document.getElementById('qzTimerDisplay');
+      if (display) {
+        const mins = Math.floor(qzTimeLeft / 60).toString().padStart(2, '0');
+        const secs = (qzTimeLeft % 60).toString().padStart(2, '0');
+        display.textContent = `⏱ ${mins}:${secs}`;
+        if (qzTimeLeft < 60) display.style.background = 'var(--red-bg)';
+        if (qzTimeLeft < 60) display.style.color = 'var(--red)';
+      }
+      
+      if (qzTimeLeft <= 0) {
+        clearInterval(qzTimerInterval);
+        qzTimerInterval = null;
+        autoSubmitQuiz();
+      }
+    }, 1000);
+  }
+
+  function autoSubmitQuiz() {
+    // Auto-submit when timer runs out
+    qzCurrentIndex = qzQuestions.length;
+    
+    // Calculate score from stored answers
+    qzScore = 0;
+    qzQuestions.forEach((q, i) => {
+      if (qzUserAnswers[i] === q.answer) qzScore++;
+    });
+    
+    showQuizResults(true);
+  }
+
+  // ==================== QUIZ RESULTS ====================
+  function showQuizResults(autoSubmitted = false) {
+    if (qzTimerInterval) { clearInterval(qzTimerInterval); qzTimerInterval = null; }
+    
+    const out = document.getElementById('qzWrap');
+    const total = qzQuestions.length;
+    const percent = Math.round((qzScore / total) * 100);
+    const color = percent >= 70 ? 'var(--green)' : percent >= 50 ? 'var(--amber)' : 'var(--red)';
+    
+    const reviewHtml = qzQuestions.map((q, i) => {
+      const userAnswer = qzUserAnswers[i];
+      const isCorrect = userAnswer === q.answer;
+      return `
+        <div style="padding:12px;margin-bottom:10px;border-radius:8px;border:1.5px solid ${isCorrect ? 'var(--green)' : 'var(--red)'};background:${isCorrect ? 'var(--green-bg)' : 'var(--red-bg)'};">
+          <div style="font-weight:700;font-size:13px;margin-bottom:6px;">${i + 1}. ${q.question}</div>
+          <div style="font-size:12px;margin-bottom:4px;">
+            <strong>Your answer:</strong> <span style="color:${isCorrect ? 'var(--green)' : 'var(--red)'};">${userAnswer || 'Not answered'}</span>
+          </div>
+          ${!isCorrect ? `<div style="font-size:12px;"><strong>Correct:</strong> <span style="color:var(--green);">${q.answer}</span></div>` : ''}
+        </div>
+      `;
+    }).join('');
+    
+    out.innerHTML = `
+      <div class="card-panel" style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
+        <div style="text-align:center;margin-bottom:20px;">
+          ${autoSubmitted ? '<p style="color:var(--red);font-weight:700;margin-bottom:8px;">⏰ Time\'s up! Quiz auto-submitted.</p>' : ''}
+          <h2 style="font-size:26px;font-weight:800;">${percent >= 70 ? '🎉' : percent >= 50 ? '📚' : '💪'} Quiz Complete</h2>
+          <div style="font-size:48px;font-weight:800;color:${color};margin:12px 0;">${percent}%</div>
+          <p style="font-size:16px;color:var(--text-muted);">You scored <strong>${qzScore} out of ${total}</strong></p>
+        </div>
+        <h3 style="font-size:16px;font-weight:700;margin-bottom:12px;">📋 Review Your Answers</h3>
+        ${reviewHtml}
+        <div style="display:flex;gap:12px;margin-top:16px;">
+          <button class="btn-primary" style="flex:1;" onclick="document.getElementById('qzBtn').click()">Try Another Quiz</button>
+          <button class="btn-secondary" style="flex:1;" onclick="showPage('dashboard')">Dashboard</button>
+        </div>
+      </div>
+    `;
+    
+    // Add manual submit button for test mode
+    if (qzMode === 'test' && qzCurrentIndex < total) {
+      const submitBtn = document.createElement('button');
+      submitBtn.className = 'btn-primary';
+      submitBtn.textContent = 'Submit Quiz';
+      submitBtn.style.width = '100%';
+      submitBtn.style.marginTop = '16px';
+      submitBtn.onclick = () => {
+        qzScore = 0;
+        qzQuestions.forEach((q, i) => { if (qzUserAnswers[i] === q.answer) qzScore++; });
+        showQuizResults();
+      };
+      out.querySelector('.card-panel').appendChild(submitBtn);
+    }
+  }
   // ==================== AI DETECTOR ====================
   function switchDocTab(tab) {
     document.querySelectorAll('.doc-tab').forEach(b => b.classList.remove('active'));
