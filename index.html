@@ -1106,9 +1106,8 @@
     document.getElementById('fcIn').value = `[File uploaded: ${file.name}]`;
   }
 
-    document.getElementById('fcBtn').onclick = async () => {
+      document.getElementById('fcBtn').onclick = async () => {
     const typedText = document.getElementById('fcIn').value.trim();
-    // If they uploaded a file, use the file text, otherwise use typed text
     const topic = typedText.startsWith('[File uploaded:') ? fcDocText : (typedText || fcDocText);
 
     if (!topic || topic.length < 50) { 
@@ -1122,16 +1121,55 @@
     
     try {
       const res = await callWorker('flashcards', topic);
+      
+      // Parse JSON flashcards
+      let cards = null;
+      try {
+        const match = String(res).match(/\[[\s\S]*?\]/);
+        if (match) cards = JSON.parse(match[0]);
+      } catch (e) {}
+      
       card.style.display = 'block';
-      document.getElementById('fcSide').textContent = 'Flashcards';
-      document.getElementById('fcText').textContent = res;
+      if (Array.isArray(cards) && cards.length > 0) {
+        // Store cards and start flashcard viewing
+        window.currentFlashcards = cards.map(c => ({
+          q: c.question || c.q || c.front || '',
+          a: c.answer || c.a || c.back || ''
+        })).filter(c => c.q && c.a);
+        window.currentFcIndex = 0;
+        window.fcShowingAnswer = false;
+        showFlashcard();
+      } else {
+        document.getElementById('fcSide').textContent = 'Generated';
+        document.getElementById('fcText').textContent = res;
+      }
     } catch (e) { 
-      alert('Error generating flashcards: ' + e.message); 
+      alert('Error: ' + e.message); 
     } finally { 
       btn.disabled = false; 
       btn.textContent = 'Generate Flashcards'; 
     }
   };
+
+  function showFlashcard() {
+    if (!window.currentFlashcards || window.currentFlashcards.length === 0) return;
+    const card = window.currentFlashcards[window.currentFcIndex];
+    document.getElementById('fcSide').textContent = window.fcShowingAnswer ? `Answer (${window.currentFcIndex + 1}/${window.currentFlashcards.length})` : `Question (${window.currentFcIndex + 1}/${window.currentFlashcards.length})`;
+    document.getElementById('fcText').textContent = window.fcShowingAnswer ? card.a : card.q;
+    
+    // Add click-to-flip and next buttons if not present
+    let controls = document.getElementById('fcControls');
+    if (!controls) {
+      controls = document.createElement('div');
+      controls.id = 'fcControls';
+      controls.style.cssText = 'display:flex;gap:12px;margin-top:20px;justify-content:center;';
+      controls.innerHTML = `
+        <button class="btn-secondary" onclick="window.fcShowingAnswer=!window.fcShowingAnswer;showFlashcard();">Flip Card</button>
+        <button class="btn-primary" onclick="if(window.currentFcIndex < window.currentFlashcards.length-1){window.currentFcIndex++;window.fcShowingAnswer=false;showFlashcard();}">Next →</button>
+      `;
+      document.getElementById('fcCard').appendChild(controls);
+    }
+  }
 
   // ==================== AI DETECTOR ====================
   function switchDocTab(tab) {
