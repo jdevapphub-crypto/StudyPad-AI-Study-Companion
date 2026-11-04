@@ -1668,6 +1668,54 @@
     try { out.textContent = await callWorker('citation', t); } catch (e) { out.innerHTML = 'Error'; }
   };
 
+    // Quiz
+  document.getElementById('qzBtn').onclick = async () => {
+    const t = document.getElementById('qzIn').value.trim();
+    const out = document.getElementById('qzWrap');
+    const btn = document.getElementById('qzBtn');
+    if (!t) { alert('Please enter a topic first.'); return; }
+    btn.disabled = true; btn.textContent = 'Generating...';
+    out.innerHTML = '<p class="output-empty">Thinking...</p>';
+    try {
+      const res = await callWorker('quiz', t);
+      out.innerHTML = `<div style="white-space: pre-wrap;">${res}</div>`;
+    } catch (e) { out.innerHTML = 'Error generating quiz.'; }
+    finally { btn.disabled = false; btn.textContent = 'Start Quiz'; }
+  };
+
+  // Flashcards
+  document.getElementById('fcBtn').onclick = async () => {
+    const t = document.getElementById('fcIn').value.trim();
+    const card = document.getElementById('fcCard');
+    const btn = document.getElementById('fcBtn');
+    if (!t) { alert('Please enter a topic first.'); return; }
+    btn.disabled = true; btn.textContent = 'Generating...';
+    try {
+      const res = await callWorker('flashcards', t);
+      card.style.display = 'block';
+      document.getElementById('fcSide').textContent = 'Generated';
+      document.getElementById('fcText').textContent = res;
+    } catch (e) { alert('Error generating flashcards.'); }
+    finally { btn.disabled = false; btn.textContent = 'Generate Flashcards'; }
+  };
+
+  // GradePilot
+  document.getElementById('gpBtn').onclick = async () => {
+    const g = document.getElementById('gpGuide').files[0];
+    const w = document.getElementById('gpWork').files[0];
+    const out = document.getElementById('gpOut');
+    const btn = document.getElementById('gpBtn');
+    if (!g || !w) { alert('Please upload both files.'); return; }
+    btn.disabled = true; out.innerHTML = 'Reading files...';
+    try {
+      const gt = await readDoc(g);
+      const wt = await readDoc(w);
+      const res = await callWorker('gradepilot', `GUIDE:\n${gt}\n\nWORK:\n${wt}`);
+      out.textContent = res;
+    } catch(e) { out.innerHTML = 'Error grading.'; }
+    finally { btn.disabled = false; }
+  };
+
   // ==================== HELPERS ====================
   async function readDoc(file) {
     const name = file.name.toLowerCase();
