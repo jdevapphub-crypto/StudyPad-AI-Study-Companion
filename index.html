@@ -12,7 +12,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   
   <!-- Libraries -->
-  <script src="https://js.paystack.co/v1/inline.js"></script>
+  <script src="https://js.paystack.co/v2/inline.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   
   <!-- Fonts & Icons -->
@@ -1015,7 +1015,7 @@ const PAYSTACK_WORKER_URL = "https://studypadaistudycompanionpaymentpaystackgate
 
   function openPricing() { document.getElementById('pricingModal').classList.add('active'); }
   function closePricing() { document.getElementById('pricingModal').classList.remove('active'); }
-    async function startCheckout(tierKey) {
+      async function startCheckout(tierKey) {
     const user = auth.currentUser;
     if (!user) { 
       closePricing(); 
@@ -1035,19 +1035,22 @@ const PAYSTACK_WORKER_URL = "https://studypadaistudycompanionpaymentpaystackgate
       return;
     }
 
-    const handler = PaystackPop.setup({
+    // Initialize Paystack V2
+    const paystack = new PaystackPop();
+    
+    paystack.newTransaction({
       key: PAYSTACK_PUBLIC_KEY,
       email: user.email,
       amount: plan.amount, 
       currency: 'ZAR',
-      plan: plan.code, // <--- THIS IS CRITICAL for recurring billing
+      plan: plan.code, 
       metadata: {
         custom_fields: [
           { display_name: 'Plan', variable_name: 'plan', value: plan.name },
           { display_name: 'Tier Key', variable_name: 'tier', value: tierKey }
         ]
       },
-      callback: async function(response) {
+      onSuccess: async (transaction) => {
         // Show processing overlay
         const overlay = document.createElement('div');
         overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff;font-family:Inter,sans-serif;';
@@ -1059,15 +1062,15 @@ const PAYSTACK_WORKER_URL = "https://studypadaistudycompanionpaymentpaystackgate
         document.body.appendChild(overlay);
 
         try {
-          // Verify payment with worker
-          const res = await fetch(`${PAYSTACK_WORKER_URL}/api/verify-payment?reference=${response.reference}`);
+          // Verify payment with your new Worker
+          const res = await fetch(`${PAYSTACK_WORKER_URL}/api/verify-payment?reference=${transaction.reference}`);
           const data = await res.json();
 
           if (data.paid && data.tier) {
             // Save premium status
             localStorage.setItem('studypad_premium_expiry', Date.now() + (30 * 24 * 60 * 60 * 1000));
             localStorage.setItem('studypad_premium_tier', data.tier);
-            localStorage.setItem('studypad_payment_ref', response.reference);
+            localStorage.setItem('studypad_payment_ref', transaction.reference);
             
             // Unlock
             isPremium = true;
@@ -1092,18 +1095,16 @@ const PAYSTACK_WORKER_URL = "https://studypadaistudycompanionpaymentpaystackgate
             <div style="font-size:64px;">⚠️</div>
             <h2 style="margin-top:16px;font-size:20px;color:#fca5a5;">Verification Error</h2>
             <p style="margin-top:8px;color:#fecaca;">${e.message}</p>
-            <p style="margin-top:12px;color:#cbd5e1;font-size:13px;">Payment reference: ${response.reference}</p>
+            <p style="margin-top:12px;color:#cbd5e1;font-size:13px;">Payment reference: ${transaction.reference}</p>
             <p style="margin-top:8px;color:#94a3b8;font-size:12px;">Contact support if you were charged.</p>
           `;
           setTimeout(() => document.body.removeChild(overlay), 5000);
         }
       },
-      onClose: function() {
-        console.log('Payment window closed');
+      onCancel: () => {
+        console.log('Payment window closed by user');
       }
     });
-
-    handler.openIframe();
   }
 
   const devTrigger = document.getElementById('developerTrigger');
