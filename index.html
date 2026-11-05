@@ -917,22 +917,38 @@
   }
 
   // ==================== CONFIG ====================
-  const WORKER_URL = "https://young-recipe-a9fastudypadsmart.jdevapphub.workers.dev";
+const WORKER_URL = "https://young-recipe-a9fastudypadsmart.jdevapphub.workers.dev";
+const PAYSTACK_WORKER_URL = "https://studypadaistudycompanionpaymentpaystackgateway.jdevapphub.workers.dev";
   const FLASHCARD_WORKER = "https://royal-morning-a089flashcardsai.jdevapphub.workers.dev/";
   const AI_DETECTOR_URL = "https://sapling-aidetector.jdevapphub.workers.dev"; 
   const AI_DETECT_API = AI_DETECTOR_URL + '/api/detect';
-  const TUTOR_WORKER_URL = "https://ai-tutor.jdevapphub.workers.dev/"; 
+  const TUTOR_WORKER_URL = "https://ai-tutor.jdevapphub.workers.dev/";
 
-  const PAYSTACK_ENABLED = false; 
+// ADD THIS LINE
+  const PAYSTACK_PUBLIC_KEY = "pk_live_e1ec9cbd22b8786375976b8c441ac8f2dc7268ca"; // Replace with your actual pk_live key 
 
-  let activeTier = 'free';
-  let devClicks = 0;
-  let currentDocText = '';
-  let currentDocScore = null;
-  let currentDocName = '';
-  let tutorPages = [];
-  let speechSession = 0;
-  let utterToken = 0;
+    const PAYSTACK_PLANS = {
+    starter: { 
+      code: "PLN_duo5tfwj96r3sti", // R49 Starter Plan Code
+      amount: 4900, 
+      name: 'Starter' 
+    },
+    pro: { 
+      code: "PLN_qbv7l82q1w5tptg", // R79 Pro Plan Code
+      amount: 7900, 
+      name: 'Pro' 
+    },
+    elite: { 
+      code: "PLN_4odgw5bm1cctqp9", // R99 Elite Plan Code
+      amount: 9900, 
+      name: 'Elite' 
+    },
+    ultimate: { 
+      code: "PLN_rmwxbjsgwq8l19j", // R149 Ultimate Plan Code
+      amount: 14900, 
+      name: 'Ultimate' 
+    }
+  };
 
   document.addEventListener('DOMContentLoaded', () => {
     if (window.innerWidth <= 768) document.getElementById('mobileMenuBtn').style.display = 'block';
@@ -999,12 +1015,95 @@
 
   function openPricing() { document.getElementById('pricingModal').classList.add('active'); }
   function closePricing() { document.getElementById('pricingModal').classList.remove('active'); }
-  function startCheckout(tierKey) {
-    if (!PAYSTACK_ENABLED) {
-      localStorage.setItem('studypad_premium_expiry', Date.now() + (30 * 24 * 60 * 60 * 1000));
-      localStorage.setItem('studypad_premium_tier', tierKey);
-      checkTrialStatus(); closePricing(); alert(`🧪 TEST MODE: ${tierKey.toUpperCase()} unlocked!`);
+    async function startCheckout(tierKey) {
+    const user = auth.currentUser;
+    if (!user) { 
+      closePricing(); 
+      alert('Please log in first to upgrade.'); 
+      openAuthModal(); 
+      return; 
     }
+
+    const plan = PAYSTACK_PLANS[tierKey];
+    if (!plan) return;
+
+    // Close modal
+    closePricing();
+
+    if (typeof PaystackPop === 'undefined') {
+      alert('Payment library failed to load. Please refresh the page.');
+      return;
+    }
+
+    const handler = PaystackPop.setup({
+      key: PAYSTACK_PUBLIC_KEY,
+      email: user.email,
+      amount: plan.amount, 
+      currency: 'ZAR',
+      plan: plan.code, // <--- THIS IS CRITICAL for recurring billing
+      metadata: {
+        custom_fields: [
+          { display_name: 'Plan', variable_name: 'plan', value: plan.name },
+          { display_name: 'Tier Key', variable_name: 'tier', value: tierKey }
+        ]
+      },
+      callback: async function(response) {
+        // Show processing overlay
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff;font-family:Inter,sans-serif;';
+        overlay.innerHTML = `
+          <div style="width:60px;height:60px;border:4px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite;"></div>
+          <p style="margin-top:20px;font-size:16px;">Verifying your payment...</p>
+          <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+        `;
+        document.body.appendChild(overlay);
+
+        try {
+          // Verify payment with worker
+          const res = await fetch(`${PAYSTACK_WORKER_URL}/api/verify-payment?reference=${response.reference}`);
+          const data = await res.json();
+
+          if (data.paid && data.tier) {
+            // Save premium status
+            localStorage.setItem('studypad_premium_expiry', Date.now() + (30 * 24 * 60 * 60 * 1000));
+            localStorage.setItem('studypad_premium_tier', data.tier);
+            localStorage.setItem('studypad_payment_ref', response.reference);
+            
+            // Unlock
+            isPremium = true;
+            unlockApp();
+            document.getElementById('trialStatusText').textContent = 'Premium';
+            
+            overlay.innerHTML = `
+              <div style="font-size:64px;">✅</div>
+              <h2 style="margin-top:16px;font-size:24px;">Payment Successful!</h2>
+              <p style="margin-top:8px;color:#cbd5e1;">You now have ${data.tier} access for 30 days.</p>
+              <p style="margin-top:4px;color:#94a3b8;font-size:14px;">Amount paid: R${data.amount.toFixed(2)}</p>
+            `;
+            setTimeout(() => {
+              document.body.removeChild(overlay);
+              alert(`🎉 Welcome to ${data.tier.toUpperCase()}! All features are now unlocked.`);
+            }, 2500);
+          } else {
+            throw new Error(data.error || 'Payment verification failed');
+          }
+        } catch (e) {
+          overlay.innerHTML = `
+            <div style="font-size:64px;">⚠️</div>
+            <h2 style="margin-top:16px;font-size:20px;color:#fca5a5;">Verification Error</h2>
+            <p style="margin-top:8px;color:#fecaca;">${e.message}</p>
+            <p style="margin-top:12px;color:#cbd5e1;font-size:13px;">Payment reference: ${response.reference}</p>
+            <p style="margin-top:8px;color:#94a3b8;font-size:12px;">Contact support if you were charged.</p>
+          `;
+          setTimeout(() => document.body.removeChild(overlay), 5000);
+        }
+      },
+      onClose: function() {
+        console.log('Payment window closed');
+      }
+    });
+
+    handler.openIframe();
   }
 
   const devTrigger = document.getElementById('developerTrigger');
