@@ -480,13 +480,10 @@
             </div>
             <div>
               <h3 style="margin-bottom: 12px; font-size: 15px;">Scan Result</h3>
-                          <div>
-              <h3 style="margin-bottom: 12px; font-size: 15px;">Scan Result</h3>
               <div class="result-container" style="position: relative;">
                 <div class="output-box" id="studentResultBox" style="min-height: 200px;">
                   <p class="output-empty" style="color:var(--text-light);font-style:italic;">Upload a document to see results.</p>
                 </div>
-                <!-- ADD THIS LOCK OVERLAY -->
                 <div id="studentLockOverlay" class="lock-overlay hidden" style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(255,255,255,0.85); backdrop-filter:blur(5px); z-index:10; border-radius:10px;">
                   <i class="fas fa-lock" style="font-size:36px; color:var(--amber); margin-bottom:10px;"></i>
                   <span style="font-weight:700; margin-bottom:12px;">Upgrade to see results</span>
@@ -497,6 +494,9 @@
                 <i class="fas fa-file-pdf"></i> Download Professional Report
               </button>
             </div>
+          </div>
+        </div>
+      </div>
 
       <div id="docLecturerTab" class="hidden">
         <div class="card-panel" style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
@@ -1031,16 +1031,13 @@ const PAYSTACK_WORKER_URL = "https://studypadaistudycompanionpaymentpaystackgate
     isPremium = true;
     // Remove any visual locks
     document.querySelectorAll('.locked-result').forEach(el => el.classList.remove('locked-result'));
-    // Show "Premium" badge if applicable
-    document.querySelectorAll('.premium-badge').forEach(el => el.style.display = 'inline-block');
+    document.getElementById('studentLockOverlay').classList.add('hidden');
   }
 
   function lockApp() {
     isPremium = false;
-    // Add visual lock to results (e.g., blur the AI detector output)
-    document.querySelectorAll('.output-box, #dtRes, #hOutput').forEach(el => {
-      if (el.textContent.trim().length > 5) el.classList.add('locked-result');
-    });
+    // Add visual lock to results
+    document.getElementById('studentLockOverlay').classList.remove('hidden');
   }
 
   function openPricing() { document.getElementById('pricingModal').classList.add('active'); }
