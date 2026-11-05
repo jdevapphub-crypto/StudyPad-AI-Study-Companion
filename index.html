@@ -480,16 +480,23 @@
             </div>
             <div>
               <h3 style="margin-bottom: 12px; font-size: 15px;">Scan Result</h3>
-              <div class="output-box" id="studentResultBox" style="min-height: 200px;">
-                <p class="output-empty" style="color:var(--text-light);font-style:italic;">Upload a document to see results.</p>
+                          <div>
+              <h3 style="margin-bottom: 12px; font-size: 15px;">Scan Result</h3>
+              <div class="result-container" style="position: relative;">
+                <div class="output-box" id="studentResultBox" style="min-height: 200px;">
+                  <p class="output-empty" style="color:var(--text-light);font-style:italic;">Upload a document to see results.</p>
+                </div>
+                <!-- ADD THIS LOCK OVERLAY -->
+                <div id="studentLockOverlay" class="lock-overlay hidden" style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(255,255,255,0.85); backdrop-filter:blur(5px); z-index:10; border-radius:10px;">
+                  <i class="fas fa-lock" style="font-size:36px; color:var(--amber); margin-bottom:10px;"></i>
+                  <span style="font-weight:700; margin-bottom:12px;">Upgrade to see results</span>
+                  <button onclick="openPricing()" style="padding:10px 24px; border-radius:999px; background:var(--amber); color:#fff; font-weight:700; border:none; cursor:pointer;">Unlock Now</button>
+                </div>
               </div>
               <button class="btn-primary hidden" style="margin-top: 16px; width: 100%; background: var(--green);" id="downloadReportBtn" onclick="downloadProfessionalReport()">
                 <i class="fas fa-file-pdf"></i> Download Professional Report
               </button>
             </div>
-          </div>
-        </div>
-      </div>
 
       <div id="docLecturerTab" class="hidden">
         <div class="card-panel" style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
@@ -981,36 +988,59 @@ const PAYSTACK_WORKER_URL = "https://studypadaistudycompanionpaymentpaystackgate
 
   function toggleSubmenu(id) { document.getElementById('submenu-' + id).classList.toggle('hidden'); }
 
-  // ==================== TRIAL & LOCKOUT ====================
+    // ==================== TRIAL & LOCKOUT ====================
   function checkTrialStatus() {
     const user = auth.currentUser;
-    if (!user) return;
+    if (!user) { lockApp(); return; }
+
     const trialStart = localStorage.getItem(`studypad_trial_start_${user.uid}`);
     const premiumExpiry = localStorage.getItem('studypad_premium_expiry');
 
+    // 1. Check if paid
     if (premiumExpiry && Date.now() < parseInt(premiumExpiry)) {
-      isPremium = true; unlockApp(); document.getElementById('trialStatusText').textContent = "Premium"; return;
+      isPremium = true; 
+      unlockApp(); 
+      document.getElementById('trialStatusText').textContent = "Premium"; 
+      return;
     }
+    
+    // 2. Check if trial started
     if (!trialStart) {
       localStorage.setItem(`studypad_trial_start_${user.uid}`, Date.now().toString());
-      isPremium = true; unlockApp(); document.getElementById('trialStatusText').textContent = "Trial: 3 days left"; return;
+      isPremium = true; 
+      unlockApp(); 
+      document.getElementById('trialStatusText').textContent = "Trial: 3 days left"; 
+      return;
     }
+    
+    // 3. Check trial expiry
     const timePassed = Date.now() - parseInt(trialStart);
     if (timePassed > (3 * 24 * 60 * 60 * 1000)) {
-      isPremium = false; lockApp(); document.getElementById('trialStatusText').textContent = "Trial Expired";
+      isPremium = false; 
+      lockApp(); 
+      document.getElementById('trialStatusText').textContent = "Trial Expired";
     } else {
       const daysLeft = Math.ceil(((3 * 24 * 60 * 60 * 1000) - timePassed) / (1000 * 60 * 60 * 24));
-      isPremium = true; unlockApp(); document.getElementById('trialStatusText').textContent = `Trial: ${daysLeft} days left`;
+      isPremium = true; 
+      unlockApp(); 
+      document.getElementById('trialStatusText').textContent = `Trial: ${daysLeft} days left`;
     }
   }
 
   function unlockApp() {
-    document.querySelectorAll('.lock-overlay').forEach(el => el.classList.add('hidden'));
+    isPremium = true;
+    // Remove any visual locks
     document.querySelectorAll('.locked-result').forEach(el => el.classList.remove('locked-result'));
+    // Show "Premium" badge if applicable
+    document.querySelectorAll('.premium-badge').forEach(el => el.style.display = 'inline-block');
   }
+
   function lockApp() {
-    document.querySelectorAll('.lock-overlay').forEach(el => el.classList.remove('hidden'));
-    document.querySelectorAll('.output-box, #dtRes').forEach(el => el.classList.add('locked-result'));
+    isPremium = false;
+    // Add visual lock to results (e.g., blur the AI detector output)
+    document.querySelectorAll('.output-box, #dtRes, #hOutput').forEach(el => {
+      if (el.textContent.trim().length > 5) el.classList.add('locked-result');
+    });
   }
 
   function openPricing() { document.getElementById('pricingModal').classList.add('active'); }
@@ -1471,21 +1501,50 @@ ${qzMode === 'test' ? 'Questions should be exam-style, testing deep understandin
     } catch (e) { document.getElementById('studentUploadStatus').textContent = '❌ Error reading file'; }
   }
 
-  async function runStudentDetector() {
+     async function runStudentDetector() {
     if (!currentDocText) { alert('Please upload a document first.'); return; }
-    const box = document.getElementById('studentResultBox'); const btn = document.getElementById('scanDocBtn');
-    box.innerHTML = '<p class="output-empty">Scanning document...</p>'; btn.disabled = true;
+    
+    // CHECK IF USER IS LOCKED
+    if (!isPremium) {
+      document.getElementById('studentLockOverlay').classList.remove('hidden');
+      return;
+    }
+
+    const box = document.getElementById('studentResultBox'); 
+    const btn = document.getElementById('scanDocBtn');
+    
+    // Now execute the scan (only if unlocked)
+    box.innerHTML = '<p class="output-empty">Scanning document...</p>'; 
+    btn.disabled = true;
+    
     try {
-      const res = await fetch(AI_DETECT_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: currentDocText }) });
+      const res = await fetch(AI_DETECT_API, { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ text: currentDocText }) 
+      });
       const data = await res.json();
+      
       if (data.error) throw new Error(data.error);
+      
       currentDocScore = data.score;
       const color = data.score > 60 ? 'var(--red)' : data.score > 20 ? 'var(--amber)' : 'var(--green)';
-      box.innerHTML = `<div style="font-size: 32px; font-weight: 800; color: ${color}; margin-bottom: 8px;">${data.score}% AI</div><div style="font-size: 13px; line-height: 1.6; max-height: 200px; overflow-y: auto;">${data.sentences ? data.sentences.map(s => s.score > 50 ? `<mark class="ai" title="${s.score}% AI">${s.text}</mark>` : s.text).join(' ') : 'Analysis complete.'}</div>`;
+      
+      box.innerHTML = `
+        <div style="font-size: 32px; font-weight: 800; color: ${color}; margin-bottom: 8px;">${data.score}% AI</div>
+        <div style="font-size: 13px; line-height: 1.6; max-height: 200px; overflow-y: auto;">
+          ${data.sentences ? data.sentences.map(s => s.score > 50 ? `<mark class="ai" title="${s.score}% AI">${s.text}</mark>` : s.text).join(' ') : 'Analysis complete.'}
+        </div>
+      `;
+      
       document.getElementById('downloadReportBtn').classList.remove('hidden');
-    } catch (e) { box.innerHTML = `<p style="color: var(--red);">Error: ${e.message}</p>`; } finally { btn.disabled = false; }
+      
+    } catch (e) { 
+      box.innerHTML = `<p style="color: var(--red);">Error: ${e.message}</p>`; 
+    } finally { 
+      btn.disabled = false; 
+    }
   }
-
   async function handleLecturerUpload(input) {
     const files = input.files; if (!files.length) return;
     const list = document.getElementById('lecturerDocList'); list.innerHTML = '';
